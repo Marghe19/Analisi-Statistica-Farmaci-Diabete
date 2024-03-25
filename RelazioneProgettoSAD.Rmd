@@ -1,0 +1,2154 @@
+---
+title: "Relazione Progetto Statistica e Analisi dei Dati"
+author: "Margherita Maria Napolitano"
+date: 'Anno accademico 2023-2024'
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+    fig.align: 'center'
+  word_document: default
+editor_options: 
+  markdown: 
+    wrap: sentence
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+# Prima Parte
+
+Gli obiettivi della seguente analisi statistica sono:
+
+-   analizzare la **tendenza temporale**, definire quali sono le variazioni nel consumo di farmaci per il diabete nel corso degli anni nei paesi in esame e se sono presenti trend in aumento o diminuzione;
+
+-   analizzare le **differenze tra paesi**, definire se ci sono disparità significative.
+
+## Dataset e rappresentazioni grafiche
+
+### Dataset e data frame
+
+Nel dataset oggetto di studio, estratto dal sito <https://stats.oecd.org/>, è analizzato il consumo farmaceutico totale secondo il *Sistema di classificazione/Defined Daily Dose (DDD) dell'ATC (Anatomical Therapeutic Chemical)*, creato dal Centro di collaborazione dell'OMS per Metodologia delle statistiche sulle droghe.
+In particolare, il dataset in esame analizza il **consumo di farmaci per il diabete** ed è formato da 32 righe corrispondenti ai paesi da cui sono stati prelevati i dati in esame e 13 colonne che rappresentano il periodo temporale dello studio (dal 2010 al 2022).
+I valori riportati sono definiti per dosaggio giornaliero per 1000 abitanti.
+
+Come primo passo disporremo il nostro dataset in un **data frame,** un oggetto di tipo lista che si presenta in forma di tabella ed è costituito da righe (osservazioni) e colonne (variabili).
+
+```{r df, echo=FALSE}
+dfDiabete <- data.frame(
+  Anno2010 = c(57.8, 45.4, 60.5, 55.4, NA, 45.7, 73.7, 47.4, 45.5, 83.3, 72.9, 81.4, NA, 70.7, 31.7, NA, NA, 65.5, NA, 30.1, 63.8, 72.3, NA, 48.3, 62.5, 57.8, 63.9, 55.8, 51.9, 47.5, 74.9, 49.9),
+  Anno2011 = c(59.6, 46.3, 61.7, 57, 34, 48, 76.2, 49, 47.5, 84.2, 74.5, 82.6, NA, 74.5, 38.1, NA, 61.6, 64.1, NA, 32.4, 64, 72.9, NA, 48.4, 58.6, 61.3, 67.3, 56, 53, 53.4, 77.8, 58.7),
+  Anno2012 = c(60.5, 45.9, 63.2, 57.6, 30.7, 50.4, 78.2, 50.5, 53.1, 84.8, 80.2, 83.2, NA, 75.3, 38.9, 36.8, 62, 64.3, 40.2, 37, 63.4, 74.1, NA, 48.4, 61, 58, 70.5, 66.4, 53.9, 56.2, 79.9, 59.4),
+  Anno2013 = c(57.5, 46, 65, 58.1, 45.8, 57, 80.2, 51.2, 54.6, 85.9, 81.6, 83.2, 85, 77.5, 41.9, NA, 62.4, 65.4, 41.5, 40.6, 64, 75.1, NA, 48.7, 62.7, 65.6, 73.1, 66.6, 55.6, 58.4, 82.3, 62.5),
+  Anno2014 = c(57.5, 46.4, 66.3, 58.1, 52.1, 61.4, 84.7, 51.8, 57.3, 88.1, 81.3, 83.6, 83.3, 76.2, 42.3, 55.3, 61.8, 60.8, 42.4, 43.7, 64.6, 75, NA, 50.1, 64.5, 70.4, 74.2, 71.1, 56.5, 61.1, 83.6, 63.3),
+  Anno2015 = c(57.5, 46.3, 68, 58.3, 59.3, 57.3, 88, 53, 59.4, 89.8, 82.4, 82.6, 86.2, 69.9, 44.9, 59.6, 62, 61.7, 43.8, 44.3, 65.2, 75.8, NA, 51.5, 67.2, 75.2, 75.9, 72.9, 58.4, 64.2, 84.7, 64.9),
+  Anno2016 = c(56.7, 46.9, 70, 79, 46.4, 59.6, 88.9, 54.7, 61.1, 92.3, 84.5, 83.8, NA, 72.4, 46.5, 62.7, 62.2, 60.3, 43.6, 47.8, 64.9, 76.2, NA, 53, 68.5, 76.3, 78.6, 75.1, 60.4, 66.5, 85.3, 67.6),
+  Anno2017 = c(57.1, 47.2, 71, 81.9, 39.8, 62.4, 89.4, 55.6, 62.2, 91.7, 84, 83.5, 80.7, 74.2, 47.2, 64.4, 62.5, 63.1, 45.5, 50, 64.2, 77.2, NA, 55.4, 67.9, 76, 80.7, 76.4, 62.4, 72.6, 84.5, 66.9),
+  Anno2018 = c(57.8, 46.3, 72.8, 84.3, 47.9, 66.7, 90.5, 57, 64.9, 95.8, 84.8, 85.9, 81.9, 75.4, 48, 62.6, 63, 65.2, 46.7, 53.6, 64, 75.1, 57, 56.2, 70.4, 76.8, 82.6, 78.1, 64.9, 75.4, 72.1, 69.2),
+  Anno2019 = c(57.5, 47.5, 75.8, 86.4, 48, 72.2, 92.4, 58.8, 65, 99.9, 86.9, 88.3, 83.7, 77, 48.7, 61.6, 64, 67.8, 48.1, 56.7, 65.1, 76.9, 57.2, 58.5, 74.2, 78.6, 83.3, 79.6, 67.8, 79.1, 74.2, 77.8),
+  Anno2020 = c(60, 49.4, 78, 104.9, 73.7, 78.8, 94.2, 62, 66.8, 101.8, 85.6, 91, 88.1, 79.2, 51.1, 59.9, 64.8, 72.7, 50.5, 59, 64.5, 77.6, 53, 59.9, 76.7, 80.4, 85.1, 81.3, 70.1, 91.9, 74.3, 79.5),
+  Anno2021 = c(62.4, 49.2, 77.7, 124.5, 77.2, 82.3, 97.5, 67, 67.5, 105.6, 87.4, 93.6, 100.9, 76.4, 54.8, 60, 65.1, 78.5, 50, 58.8, 63.8, 78.5, 54.9, 65.9, 78.6, 79.5, 87.2, 84.7, 73.2, 96.3, 90, 75.5),
+  Anno2022 = c(NA, NA, NA, 154.7, 79.7, 67.9, NA, NA, 73.8, NA, NA, NA, 98.4, 75.3, 57.9, 66.2, 67.2, NA, 51.6, NA, 60, NA, 52.3, 76.8, 85, NA, 91.6, 88.6, 80.5, NA, NA, NA)
+)
+row.names(dfDiabete)=c("Australia", "Austria", "Belgium", "Canada", "Chile", "Costa Rica", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", "Iceland", "Israel", "Italy", "Korea", "Latvia", "Lithuania", "Luxembourg", "Netherlands", "New Zealand", "Norway", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden", "Turkiye", "United Kingdom", "Croatia")
+
+dfDiabete
+
+```
+
+Si nota la presenza di numerosi valori nulli, in particolar modo nelle righe 13, 16, 19, 23 (Grecia, Israele, Latvia, Nuova Zelanda) e nelle colonne 1,2,13 (2010, 2011, 2022).
+Di conseguenza si è passato all'eliminazione di tali dati per avere un dataset il più coerente possibile.
+
+```{r dfcompresso, echo=FALSE}
+dfDiabete <- dfDiabete[-c(13, 16, 19, 23), ]
+dfDiabete<-dfDiabete[,-c(1,2,13)]
+dfDiabete
+
+```
+
+Il sistema R è dotato di un sofisticato ambiente grafico che permette di creare grafici per illustrare i risultati di elaborazioni statistiche.
+Visualizzare i dati attraverso grafici è utile per diverse finalità:
+
+**1. Facilitare la comprensione:** i grafici possono aiutare a rappresentare in modo visivo i dati e a renderli più facili da comprendere.
+Ad esempio, un grafico a barre può mostrare facilmente le frequenze di una variabile categoriale, mentre un grafico a linee può mostrare l'evoluzione di una variabile nel tempo.
+
+**2. Individuare pattern e tendenze:** i grafici possono aiutare ad individuare pattern e tendenze nei dati, che altrimenti potrebbero essere difficili da rilevare dall'analisi dei dati in forma tabellare.
+
+**3. Fare confronti:** i grafici consentono di fare confronti tra diverse categorie o gruppi di dati, ad esempio confrontando le frequenze di diverse variabili.
+
+**4. Comunicare i risultati:** i grafici possono essere utilizzati per comunicare i risultati di un'analisi a un pubblico più ampio, anche a persone che non sono esperte di statistica o di analisi dei dati.
+Ad esempio, un grafico può essere incluso in un report o in una presentazione, come in questo caso, per illustrare in modo chiaro e conciso i risultati di un'analisi.
+
+### Barplot
+
+Nel nostro caso di studio disponiamo di una matrice di dati numerici e a partire da essa è possibile creare dei vettori contenenti gli elementi delle singole colonne tramite la funzione R *cbind()*.
+Utilizzando poi la funzione *barplot()* è possibile creare dei grafici a barre.
+I **grafici a barre** sono indicati per rappresentare una o più variabili categoriali.
+Ogni categoria viene rappresentata da una barra la cui altezza è proporzionale alla frequenza o alla percentuale della categoria stessa.
+Ordiniamo le barre in ordine crescente in modo da visualizzare al meglio i dati.
+
+```{r barplot, echo=FALSE, fig.height=15, fig.width=10}
+library(RColorBrewer)
+colors<-brewer.pal(9, "Pastel1")
+colori<-colorRampPalette(colors)(32)
+m<-cbind(c(dfDiabete$Anno2012),
+         c(dfDiabete$Anno2013),
+         c(dfDiabete$Anno2014),
+         c(dfDiabete$Anno2015),
+         c(dfDiabete$Anno2016),
+         c(dfDiabete$Anno2017),
+         c(dfDiabete$Anno2018),
+         c(dfDiabete$Anno2019),
+         c(dfDiabete$Anno2020),
+         c(dfDiabete$Anno2021))
+rownames(m)<-c("Australia", "Austria", "Belgium", "Canada", "Chile", "Costa Rica", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Hungary", "Iceland", "Italy", "Korea", "Lithuania", "Luxembourg", "Netherlands", "Norway", "Portugal", "Slovak Republic", "Slovenia", "Spain", "Sweden", "Turkiye", "United Kingdom", "Croatia")
+colnames(m)<-c("2012", "2013", "2014", "2015","2016", "2017", "2018", "2019","2020", "2021")
+m
+
+#BARPLOT per visualizzare l'andamento per ciascun anno in tutti i paesi
+b1<-m[,1] #2012
+b2<-m[,2] #2013
+b3<-m[,3] #2014
+b4<-m[,4] #2015
+b5<-m[,5] #2016
+b6<-m[,6] #2017
+b7<-m[,7] #2018
+b8<-m[,8] #2019
+b9<-m[,9] #2020
+b10<-m[,10] #2021
+par(mfrow=c(2,1))
+barplot(sort(b1), cex.names=1, ylab= "Valori", ylim=c(0,150), col=colori, main="Andamento consumo farmaci per il diabete nel 2012", las=2)
+barplot(sort(b2), ylab= "Valori", cex.names=1, ylim=c(0,150), col=colori, main="Andamento consumo farmaci per il diabete nel 2013", las=2)
+barplot(sort(b3), ylab= "Valori", cex.names=1, ylim=c(0,150), col=colori, main="Andamento consumo farmaci per il diabete nel 2014", las=2)
+barplot(sort(b4), ylab= "Valori", cex.names=1, ylim=c(0,150), col=colori, main="Andamento consumo farmaci per il diabete nel 2015", las=2)
+barplot(sort(b5), ylab= "Valori", cex.names=1, ylim=c(0,150), col=colori, main="Andamento consumo farmaci per il diabete nel 2016", las=2)
+barplot(sort(b6), ylab= "Valori", cex.names=1, ylim=c(0,150), col=colori, main="Andamento consumo farmaci per il diabete nel 2017", las=2)
+barplot(sort(b7), ylab= "Valori", cex.names=1, ylim=c(0,150), col=colori, main="Andamento consumo farmaci per il diabete nel 2018", las=2)
+barplot(sort(b8), ylab= "Valori", cex.names=1, ylim=c(0,150), col=colori, main="Andamento consumo farmaci per il diabete nel 2019", las=2)
+barplot(sort(b9), ylab= "Valori", cex.names=1, ylim=c(0,150), col=colori, main="Andamento consumo farmaci per il diabete nel 2020", las=2)
+barplot(sort(b10), ylab= "Valori", cex.names=1, ylim=c(0,150), col=colori, main="Andamento consumo farmaci per il diabete nel 2021", las=2)
+
+```
+
+Dai grafici riportati possiamo notare come la Finlandia sia stato sempre il paese che ha riscontrato un maggiore consumo di farmaci per il diabete, tranne dal 2020 in cui il Canada ha avuto un notevole incremento.\
+Lo stesso discorso può essere applicato al Cile in quanto paese con il minor tasso di consumo di farmaci per il diabete fino al 2020, anno in cui i valori sono aumentati.\
+E' possibile inoltre notare la differenza tra i paesi che registrano un basso tasso di consumo (ovvero quelli più a sinistra nel grafico) i cui valori si aggirano intorno ai 40/50 e i paesi con un maggiore consumo i cui valori arrivano anche a 130.
+
+### Distribuzioni di frequenza
+
+Consideriamo una variabile X e indichiamo con $z_1,z_2,...,z_k$ le modalità distinte da essa assunte.
+Prendiamo poi un campione costituito da n osservazioni di X e indichiamo con $n_i$ il numero di volte in cui ciascuna modalità $z_i$ è presente nel campione, ossia la frequenza assoluta con cui essa appare nel campione.
+L'insieme ${(z_i,n_i), i=1,2,...k}$ si chiama **distribuzione di frequenza**.
+
+La **frequenza assoluta** indica il numero di volte in cui ciascuna modalità è presente nel campione, dunque è pari alla numerosità del campione quando non vi sono dati mancanti, come nel nostro caso.
+Per le variabili quantitative è possibile calcolare le frequenze assolute distinguendo il numero di modalità, nel nostro caso è un range che va da 30 a 125.
+Si preferisce raccogliere le informazioni in classi e calcolare le frequenze relative a tali classi, ossia le frequenze con cui gli elementi del vettore cadono nelle diverse classi.
+Per fare tale operazione si utilizza la funzione *cut()* che permette di raggruppare i dati relativi ad un vettore in intervalli elencando nel parametro breaks gli estremi degli intervalli, nel nostro caso avremo quattro classi: (30,60], (60,80], (80, 100], (100, 125]
+
+```{r freqassoluta, echo=FALSE}
+#frequenze assolute
+print("frequenze assolute 2012")
+assolute2012<-table(cut(dfDiabete$Anno2012, breaks=c(30,60,80,100,125)))
+assolute2012
+print("frequenze assolute 2013")
+assolute2013<-table(cut(dfDiabete$Anno2013, breaks=c(30,60,80,100,125)))
+assolute2013
+print("frequenze assolute 2020")
+assolute2020<-table(cut(dfDiabete$Anno2020, breaks=c(30,60,80,100,125)))
+assolute2020
+print("frequenze assolute 2021")
+assolute2021<-table(cut(dfDiabete$Anno2021, breaks=c(30,60,80,100,125)))
+assolute2021
+```
+
+E' stata utilizzata la funzione *table()* per la costruzione della distribuzione di frequenza, quindi le frequenze assolute.
+
+Per rappresentare correttamente la distribuzione di frequenza di una variabile quantitativa occorre utilizzare il comando *plot(table(x))* che produce un grafico a bastoncini in cui sull'asse orizzontale sono riportati i valori e sull'asse verticale le frequenze assolute dei valori distinti assunti dal vettore.
+Riferendosi ai valori riportati precedentemente avremo i seguenti grafici:
+
+```{r graficoassolute, echo=FALSE, fig.height=10, fig.width=10}
+par(mfrow=c(2,2))
+plot(assolute2012, ylab="Frequenze assolute dei valori Anno2012", col=c("pink", "purple", "light blue", "blue"))
+plot(assolute2013, ylab="Frequenze assolute dei valori Anno 2013", col=c("pink", "purple", "light blue", "blue"))
+plot(assolute2020, ylab="Frequenze assolute dei valori Anno 2020", col=c("pink", "purple", "light blue", "blue"))
+plot(assolute2021, ylab="Frequenze assolute dei valori Anno 2021", col=c("pink", "purple", "light blue", "blue"))
+```
+
+Per le variabili quantitative si può considerare anche una rappresentazione tramite diagrammi a torta generati dal comando *pie(table(x))*, dove x è un vettore o un fattore.
+
+```{r pieassolute, echo=FALSE, fig.height=10, fig.width=10}
+par(mfrow=c(2,2))
+pie(assolute2012, col=c("pink", "purple", "light blue", "blue"), radius=0.9, main="Frequenze assolute 2012")
+pie(assolute2013, col=c("pink", "purple", "light blue", "blue"), radius=0.9, main="Frequenze assolute 2013")
+pie(assolute2020, col=c("pink", "purple", "light blue", "blue"), radius=0.9, main="Frequenze assolute 2020")
+pie(assolute2021, col=c("pink", "purple", "light blue", "blue"), radius=0.9, main="Frequenze assolute 2021")
+```
+
+Calcoliamo poi le **frequenze assolute cumulate** tramite la funzione *cumsum()* che permette di calcolare le somme cumulate degli elementi di un vettore.
+La frequenza assoluta cumulata è definita come $N_i = n_1 + n_2 + ... + n_i (i = 1,2,...,k)$.
+E' una misura che indica il numero totale di osservazioni fino a un certo punto in una distribuzione di dati.
+Si calcola sommando le frequenze assolute dei valori precedenti o fino al punto desiderato nella distribuzione.
+La frequenza assoluta cumulata fornisce informazioni utili sulla distribuzione complessiva dei dati.
+
+```{r freqassolutacum, echo=FALSE}
+print("frequenze assolute cumulate 2012")
+asscum2012<-cumsum(assolute2012)
+asscum2012
+print("frequenze assolute cumulate 2013")
+asscum2013<-cumsum(assolute2013)
+asscum2013
+print("frequenze assolute cumulate 2020")
+asscum2020<-cumsum(assolute2020)
+asscum2020
+print("frequenze assolute cumulate 2021")
+asscum2021<-cumsum(assolute2021)
+asscum2021
+```
+
+Si può calcolare la **frequenza relativa**, ovvero il rapporto tra la il numero di volte in cui ciascuna modalità è presente nel campione e la numerosità del campione stesso.
+
+```{r freqrelativa, echo=FALSE}
+print("frequenze relative anno 2012")
+relative2012<-(assolute2012)/length(dfDiabete$Anno2012)
+relative2012
+print("frequenze relative anno 2013")
+relative2013<-(assolute2013)/length(dfDiabete$Anno2013)
+relative2013
+print("frequenze relative anno 2020")
+relative2020<-(assolute2020)/length(dfDiabete$Anno2020)
+relative2020
+print("frequenze relative anno 2021")
+relative2021<-(assolute2021)/length(dfDiabete$Anno2021)
+relative2021
+```
+
+Per rappresentare le distribuzioni appena calcolate utilizziamo sia un grafico a bastoncini che un grafico a torta.
+
+```{r graficirelative, echo=FALSE, fig.height=10, fig.width=10}
+par(mfrow= c(2,2))
+plot(relative2012, ylab="Frequenze relative dei valori Anno 2012", col=c("pink", "purple", "light blue", "blue"))
+plot(relative2013, ylab="Frequenze relative dei valori Anno 2013", col=c("pink", "purple", "light blue", "blue"))
+plot(relative2020, ylab="Frequenze relative dei valori Anno 2020", col=c("pink", "purple", "light blue", "blue"))
+plot(relative2021, ylab="Frequenze relative dei valori Anno 2021", col=c("pink", "purple", "light blue", "blue"))
+par(mfrow= c(2,2))
+pie(relative2012, col=c("pink", "purple", "light blue", "blue"), radius=0.9, main = "freuqenze relative 2012")
+pie(relative2013, col=c("pink", "purple", "light blue", "blue"), radius=0.9, main = "freuqenze relative 2013")
+pie(relative2020, col=c("pink", "purple", "light blue", "blue"), radius=0.9, main = "freuqenze relative 2020")
+pie(relative2021, col=c("pink", "purple", "light blue", "blue"), radius=0.9, main = "freuqenze relative 2021")
+```
+
+Anche in questo caso è possibile calcolare le **frequenze relative cumulate**, che serviranno per definire la funzione di distribuzione in seguito, mediante la funzione *cumsum()*.
+La frequenza relativa cumulata è definita come $F_i = f_1 + f_2 + ... + f_i (i = 1,2,...,k)$.
+
+```{r freqrelativacum, echo=FALSE}
+#frequenze relative cumulate
+print("frequenze relative cumulate anno 2012")
+cumsum((assolute2012)/length(dfDiabete$Anno2012))
+print("frequenze relative cumulate anno 2013")
+cumsum((assolute2013)/length(dfDiabete$Anno2013))
+print("frequenze relative cumulate anno 2020")
+cumsum((assolute2020)/length(dfDiabete$Anno2020))
+print("frequenze relative cumulate anno 2021")
+cumsum((assolute2021)/length(dfDiabete$Anno2021))
+
+```
+
+Con gli stessi intervalli utilizzati per il calcolo delle distribuzioni di frequenza, visualizzo una mappa in cui coloro in verde i paesi che hanno valori compresi tra 30 e 60, in giallo tra 60 e 80, in arancione tra 80 e 100 e in rosso tra 100 e 125.
+In particolare effettuo questa operazione per gli anni 2012 e 2021 per visualizzare in che modo sono cambiati i valori.
+
+Visualizziamo il grafico prodotto per l'anno 2012.
+
+```{r mappa2012, echo=FALSE, fig.height=8, fig.width=8, warning = FALSE, message=FALSE}
+library(maps)
+library(sf)
+library(rnaturalearth)
+library(ggplot2)
+library(rnaturalearthdata)
+library(rworldmap)
+
+world <- ne_countries(scale ="medium", returnclass = "sf")
+world <- world[world$continent != c("Antarctica"),]
+#unisco i dari del dataframe a quelli della mappa
+world <- merge(world, dfDiabete, by.x = "name", by.y = "row.names", all.x = TRUE)
+
+verde_range <- c(30, 60)
+giallo_range <- c(60, 80)
+arancione_range <- c(80, 100)
+rosso_range <- c(100, 125)
+
+# Colora i paesi in base ai range di valori per anno 2012
+world$colore <- ifelse(!is.na(world$Anno2012),
+                       ifelse(world$Anno2012 >= verde_range[1] & world$Anno2012 <= verde_range[2], "green",
+                              ifelse(world$Anno2012 > giallo_range[1] & world$Anno2012 <= giallo_range[2], "yellow",
+                                     ifelse(world$Anno2012 > arancione_range[1] & world$Anno2012 <= arancione_range[2], "orange",
+                                            ifelse(world$Anno2012 > rosso_range[1] & world$Anno2012 <= rosso_range[2], "red",
+                                                   "lightgrey")))),
+                       "lightgrey")
+
+# Crea la mappa
+par(mar = c(0,0,0,0))
+plot(world["geometry"], col = world$colore, border = "white")
+
+
+
+```
+
+Visualizziamo il grafico prodotto per l'anno 2021.
+
+```{r mappa2021, echo=FALSE, fig.height=8, fig.width=8, warning = FALSE, message=FALSE}
+world$colore <- ifelse(!is.na(world$Anno2021),
+                       ifelse(world$Anno2021 >= verde_range[1] & world$Anno2021 <= verde_range[2], "green",
+                              ifelse(world$Anno2021 > giallo_range[1] & world$Anno2021 <= giallo_range[2], "yellow",
+                                     ifelse(world$Anno2021 > arancione_range[1] & world$Anno2021 <= arancione_range[2], "orange",
+                                            ifelse(world$Anno2021 > rosso_range[1] & world$Anno2021 <= rosso_range[2], "red",
+                                            "lightgrey")))),
+                       "lightgrey")
+
+# Crea la mappa
+par(mar = c(0,0,0,0))
+plot(world["geometry"], col = world$colore, border = "white")
+```
+
+### Boxplot
+
+Consideriamo un campione dei valori assunti dalla variabile quantitativa X.
+Procediamo ad ordinare i valori del campione in ordine crescente mediante i quartili.
+Successivamente generiamo il *boxplot* che rappresenta una scatola i cui estremi sono il quartile Q1 e il quartile Q3, tagliata da una linea orizzontale in corrispondenza del quartile Q2, ossia la mediana.
+Effettueremo tale analisi sui dati relativi agli anni 2012, 2013, 2020 e 2021.
+
+```{r boxplot, echo=FALSE, fig.height=10, fig.width=10}
+par(mfrow=c(2,2))
+print("Quartili anno 2012")
+quantile(dfDiabete$Anno2012)
+summary(dfDiabete$Anno2012)
+boxplot(dfDiabete$Anno2012, main = "Boxplot dei valori di consumo di farmaci per il diabete nel 2012", col="pink")
+print("Quartili anno 2013")
+quantile(dfDiabete$Anno2013)
+summary(dfDiabete$Anno2013)
+boxplot(dfDiabete$Anno2013, main = "Boxplot dei valori di consumo di farmaci per il diabete nel 2013", col="purple")
+print("Quartili anno 2020")
+quantile(dfDiabete$Anno2020)
+summary(dfDiabete$Anno2020)
+boxplot(dfDiabete$Anno2020, main = "Boxplot dei valori di consumo di farmaci per il diabete nel 2020", col="light blue")
+print("Quartili anno 2021")
+quantile(dfDiabete$Anno2021)
+summary(dfDiabete$Anno2021)
+boxplot(dfDiabete$Anno2021, main = "Boxplot dei valori di consumo di farmaci per il diabete nel 2021", col="blue")
+
+```
+
+E' possibile quindi ricavare il valore dei quartili $Q_0, Q_1, Q_2, Q_3, Q_4$ per ciascun anno e visualizzare i singoli boxplot.
+Visualizziamo adesso tutti i boxplot in un unico grafico per analizzarli.
+
+```{r confrontoboxplot, echo=FALSE, fig.height=7, fig.width=7}
+boxplot(dfDiabete$Anno2012,  dfDiabete$Anno2013, dfDiabete$Anno2020,  dfDiabete$Anno2021, names=c("2012","2013", "2020", "2021"), col=c("pink", "purple","light blue","blue"), main = "boxplot 2012, 2013, 2020, 2021")
+```
+
+L'estremo più basso del baffo inferiore corrisponde al valore più piccolo tra le osservazioni che risulta maggiore o uguale di $Q_1 - 1,5 * (Q_3 - Q_1)$, mentre l'estremo del baffo superiore corrisponde al valore più grande delle osservazioni che risulta minore o uguale a $Q_3 + 1,5 * (Q_3 - Q_1)$.
+Possiamo quindi notare come entrambi i valori, sia il più piccolo che il più grande, sono aumentati nel corso degli anni implicando l'esistenza di un trend in aumento.
+La distanza tra il primo e il terzo quartile è detta intervallo interquartile o scarto interquartile.
+I dati del campione al di fuori dell'intervallo $(Q_1 - 1,5 * (Q_3 - Q_1), Q_3 + 1,5 * (Q_3-Q_1))$ sono visualizzati nel grafico sotto forma di punti e sono detti *valori anomali* o outlier.
+Questi valori costituiscono un'anomalia rispetto alla maggior parte dei valori osservati.
+Nel nostro caso è presente solo nell'anno 2021.
+Tale anomalia è causata dal valore del Canada nel 2021 che è pari a 124.5.
+Tramite il boxplot, in particolare visualizzando la mediana, è possibile avere informazioni circa la forma simmetrica o asimmetrica della distribuzione.
+
+```{r confrontoboxplottot, echo=FALSE, fig.height=10, fig.width=10}
+boxplot(dfDiabete$Anno2012,  dfDiabete$Anno2013, dfDiabete$Anno2014, dfDiabete$Anno2015, dfDiabete$Anno2016, dfDiabete$Anno2017, dfDiabete$Anno2018, dfDiabete$Anno2019, dfDiabete$Anno2020,  dfDiabete$Anno2021, names=c("2012","2013", "2014", "2015", "2016", "2017", "2018", "2019","2020", "2021"), col=colori, main = "boxplot dal 2012 al 2021")
+
+```
+
+Possiamo notare che in generale, visualizzando i boxplot relativi a ciascun anno, c'è stato un trend crescente del valore dei dati e sempre solo nel 2021 è presente un valore anomalo.
+
+### Serie temporali
+
+Una *serie temporale* può essere memorizzata in un vettore, in una matrice o in un data frame.
+La funzione R che permette di definire una *serie temporale* è *ts()* in cui avremo i seguenti parametri:  
+
+**x**: valori della serie;  
+
+**start**: istante iniziale temporale;  
+
+**frequency**: numero di osservazioni nell'unità di tempo (reciproco di deltat);  
+
+**deltat**: la distanza temporale tra le osservazioni;  
+
+**end**: istante finale.
+
+La funzione *plot()* permette successivamente di rappresentare il grafico della serie temporale creata.
+
+```{r serietemp, echo=FALSE, fig.height=10, fig.width=10}
+#SERIE TEMPORALI: andamento del consumo di farmaci dal 2010 al 2022 in ciascun paese presente nel dataset
+par(mfrow=c(2,2))
+valoriAustralia<-c(60.5,57.5,57.5,57.5,56.7,57.1,57.8,57.5,60,62.4)
+y<-ts(valoriAustralia, start=2012, frequency=1, end=2021)
+plot(y,lwd = 2, main = "Distribuzione consumo di farmaci per il diabete in Australia", col="purple", type = "o", cex.main = 1, ylab="Valori", ylim=c(30, 160))
+
+#quasi invariato
+valoriAustria<-c(45.9,46,46.4,46.3,46.9,47.2,46.3,47.5,49.4,49.2)
+y<-ts(valoriAustria, start=2010, frequency=1, end=2022)
+plot(y,lwd = 2, main = "Distribuzione consumo di farmaci per il diabete in Austria", col="purple", cex.main = 1, type = "o",ylab="Valori", ylim=c(30, 160))
+
+valoriBelgio<-c(63.2,65,66.3,68,70,71,72.8,75.8,78,77.7)
+y<-ts(valoriBelgio, start=2010, frequency=1, end=2022)
+plot(y,lwd = 2, main = "Distribuzione consumo di farmaci per il diabete in Belgio", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+#!!! crescita nel 2020
+valoriCanada<-c(57.6,58.1,58.1,58.3,79,81.9,84.3,86.4,104.9,124.5)
+y<-ts(valoriCanada, start=2010, frequency=1, end=2022)
+plot(y,lwd = 2, main = "Distribuzione consumo di farmaci per il diabete in Canada", col="purple", cex.main = 1, type = "o",ylab="Valori", ylim=c(30, 160))
+
+valoriChile<-c(30.7,45.8,52.1,59.3,46.4,39.8,47.9,48,73.7,77.2)
+y<-ts(valoriChile, start=2010, frequency=1, end=2022)
+plot(y,lwd = 2, main = "Distribuzione consumo di farmaci per il diabete in Chile", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+valoriCostaRica<-c(50.4,57,61.4,57.3,59.6,62.4,66.7,72.2,78.8,82.3)
+y<-ts(valoriCostaRica, start=2010, frequency=1, end=2022)
+plot(y,lwd = 2, main = "Distribuzione consumo di farmaci per il diabete in Costa Rica", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+valoriRepCeca<-c( 78.2,  80.2,  84.7,    88,  88.9,  89.4,  90.5,  92.4,  94.2,  97.5)
+y<-ts(valoriRepCeca, start=2010, frequency=1, end=2022)
+plot(y,lwd = 2, main = "Distribuzione consumo di farmaci per il diabete in Repubblica Ceca", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+valoriDanimarca<-c(50.5,51.2,51.8,53,54.7,55.6,57,58.8,62,67)
+y<-ts(valoriDanimarca, start=2010, frequency=1, end=2022)
+plot(y,lwd = 2, main = "Distribuzione consumo di farmaci per il diabete in Danimarca", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+valoriEstonia<-c(53.1,54.6,57.3,59.4,61.1,62.2,64.9,65,66.8,67.5)
+y<-ts(valoriEstonia, start=2010, frequency=1, end=2022)
+plot(y,lwd = 2, main = "Distribuzione di farmaci per il diabete in Estonia", col="purple", cex.main = 1, type = "o",ylab="Valori", ylim=c(30, 160))
+
+valoriFinlandia<-c(84.8,85.9,88.1,89.8,92.3,91.7,95.8,99.9,101.8,105.6)
+y<-ts(valoriFinlandia, start=2010, frequency=1, end=2022)
+plot(y,lwd = 2, main = "Distribuzione di farmaci per il diabete in Finlandia", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+valoriFrancia<-c(80.2,81.6,81.3,82.4,84.5,84,84.8,86.9,85.6,87.4)
+y<-ts(valoriFrancia, start=2010, frequency=1, end=2022)
+plot(y,lwd = 2, main = "Distribuzione consumo di farmaci per il diabete in Francia", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+valoriGermania<-c(83.2,83.2,83.6,82.6,83.8,83.5,85.9,88.3,91,93.6)
+y<-ts(valoriGermania, start=2010, frequency=1, end=2022)
+plot(y,lwd = 2, main = "Distribuzione consumo di farmaci per il diabete in Germania", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+valoriUngheria<-c(75.3,77.5,76.2,69.9,72.4,74.2,75.4,77,79.2,76.4)
+y<-ts(valoriUngheria, start=2010, frequency=1, end=2022)
+plot(y,lwd = 2, main = "Distribuzione consumo di farmaci per il diabete in Ungheria", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+valoriIslanda<-c(38.9,41.9,42.3,44.9,46.5,47.2,48,48.7,51.1,54.8)
+y<-ts(valoriIslanda, start=2010, frequency=1, end=2022)
+plot(y,lwd = 2, main = "Distribuzione consumo di farmaci per il diabete in Islanda", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+valoriItalia<-c(62,62.4,61.8,62,62.2,62.5,63,64,64.8,65.1)
+y<-ts(valoriItalia, start=2010, frequency=1, end=2022)
+plot(y,lwd = 2, main = "Distribuzione consumo di farmaci per il diabete in Italia", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+valoriCorea<-c(64.3,65.4,60.8,61.7,60.3,63.1,65.2,67.8,72.7,78.5)
+y<-ts(valoriCorea, start=2010, frequency=1, end=2022)
+plot(y,lwd = 2, main = "Distribuzione consumo di farmaci per il diabete in Corea", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+valoriLituania<-c(37,40.6,43.7,44.3,47.8,50,53.6,56.7,59,58.8)
+y<-ts(valoriLituania, start=2010, frequency=1, end=2022)
+plot(y,lwd = 2, main = "Distribuzione consumo di farmaci per il diabete in Lituania", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+valoriLussemburgo<-c(63.4,64,64.6,65.2,64.9,64.2,64,65.1,64.5,63.8)
+y<-ts(valoriLussemburgo, start=2010, frequency=1, end=2022)
+plot(y,lwd = 2, main = "Distribuzione consumo di farmaci per il diabete in Lussemburgo", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+valoriPaesiBassi<-c(74.1,75.1,75,75.8,76.2,77.2,75.1,76.9,77.6,78.5)
+y<-ts(valoriPaesiBassi, start=2010, frequency=1, end=2022)
+plot(y,lwd = 2, main = "Distribuzione consumo di farmaci per il diabete in Paesi Bassi", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+valoriNorvegia<-c(48.4,48.7,50.1,51.5,53,55.4,56.2,58.5,59.9,65.9)
+y<-ts(valoriNorvegia, start=2010, frequency=1, end=2022)
+plot(y, lwd = 2,main = "Distribuzione consumo di farmaci per il diabete in Norvegia", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+valoriPortogallo<-c(61,62.7,64.5,67.2,68.5,67.9,70.4,74.2,76.7,78.6)
+y<-ts(valoriPortogallo, start=2010, frequency=1, end=2022)
+plot(y,lwd = 2, main = "Distribuzione consumo di farmaci per il diabete in Portogallo", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+valoriSlovacchia<-c(58,65.6,70.4,75.2,76.3,76,76.8,78.6,80.4,79.5)
+y<-ts(valoriSlovacchia, start=2010, frequency=1, end=2022)
+plot(y,lwd = 2, main = "Distribuzione consumo di farmaci per il diabete in Slovacchia", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+valoriSlovenia<-c(70.5,73.1,74.2,75.9,78.6,80.7,82.6,83.3,85.1,87.2)
+y<-ts(valoriSlovenia, start=2010, frequency=1, end=2022)
+plot(y,lwd = 2, main = "Distribuzione consumo di farmaci per il diabete in Slovenia", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+valoriSpagna<-c(66.4,66.6,71.1,72.9,75.1,76.4,78.1,79.6,81.3,84.7)
+y<-ts(valoriSpagna, start=2010, frequency=1, end=2022)
+plot(y,lwd = 2, main = "Distribuzione consumo di farmaci per il diabete in Spagna", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+valoriSvezia<-c(53.9,55.6,56.5,58.4,60.4,62.4,64.9,67.8,70.1,73.2)
+y<-ts(valoriSvezia, start=2010, frequency=1, end=2022)
+plot(y, lwd = 2,main = "Distribuzione consumo di farmaci per il diabete in Svezia", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+valoriTurchia<-c(56.2,58.4,61.1,64.2,66.5,72.6,75.4,79.1,91.9,96.3)
+y<-ts(valoriTurchia, start=2010, frequency=1, end=2022)
+plot(y, lwd = 2,main = "Distribuzione consumo di farmaci per il diabete in Turchia", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+valoriRegnoUnito<-c(79.9,82.3,83.6,84.7,85.3,84.5,72.1,74.2,74.3,90)
+y<-ts(valoriRegnoUnito, start=2010, frequency=1, end=2022)
+plot(y,lwd = 2, main = "Distribuzione consumo di farmaci per il diabete in Regno Unito", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+valoriCroazia<-c(59.4,62.5,63.3,64.9,67.6,66.9,69.2,77.8,79.5,75.5)
+y<-ts(valoriCroazia, start=2010, frequency=1, end=2022)
+plot(y, lwd = 2, main = "Distribuzione consumo di farmaci per il diabete in Croazia", col="purple", cex.main = 1,type = "o", ylab="Valori", ylim=c(30, 160))
+
+
+```
+
+Tramite tali rappresentazioni possiamo visualizzare l'andamento del consumo di farmaci per il diabete dal 2012 al 2021 in ciascun paese.
+In particolare è evidente che in alcuni paesi come Austria, Australia, Italia, Lussemburgo e Paesi Bassi i valori sono quasi **costanti**, quindi non ci sono state variazioni significative.
+In quasi tutti i paesi e in particolare in Canada e Turchia, invece, c'è stato un **incremento** importante nel 2019.\
+Tramite alcune ricerche ho scoperto che nel 2019 il diabete è stata la nona causa di morte nel mondo.\
+Una delle cause dell'aumento di malati di diabete può essere l'**obesità**, in particolare del diabete di tipo 2.
+Per studiare se è presente un'effettiva correlazione tra tale causa e l'aumento del diabete, ho ricercato dei dataset e analisi statistiche che riportassero il tasso di obesità nei paesi oggetti di studio.
+L'obesità è definita come un eccesso di grasso corporeo che può portare a una serie di problemi di salute, tra cui l'insulino-resistenza e il diabete di tipo 2.
+Quando una persona è obesa, il tessuto adiposo in eccesso può interferire con il modo in cui il corpo utilizza l'insulina, l'ormone che regola il livello di zucchero nel sangue.
+Questa condizione, chiamata resistenza all'insulina, può portare a un aumento dei livelli di zucchero nel sangue e, nel tempo, può svilupparsi il diabete di tipo 2.
+La misura più utilizzata si basa sull'indice di massa corporea (BMI), che è un numero unico che valuta il peso di un individuo in relazione all'altezza (peso/altezza², con peso in chilogrammi e altezza in metri).
+In base alla classificazione dell'OMS, gli adulti con un BMI compreso tra 25 e 30 sono definiti sovrappeso, mentre quelli con un BMI pari o superiore a 30 sono obesi.
+Questo indicatore viene presentato sia per i dati "auto-riportati" (stime di altezza e peso provenienti da interviste sanitarie basate sulla popolazione) sia per dati "misurati" (stime precise di altezza e peso da esami sanitari) ed è misurato come percentuale del popolazione di età pari o superiore a 15 anni.\
+Il grafico seguente è estratto da <https://data.oecd.org/healthrisk/overweight-or-obese-population.htm> e i paesi colorati rappresentano i paesi oggetti di studio della nostra analisi statistica.
+In particolare sono riportati i valori degli ultimi dati disponibili (2019-2022).
+
+![Errore caricamento immagine!](obesit%C3%A0.png) Possiamo subito notare che non c'è corrispondenza nei valori del Cile, in quanto non è un paese con alto consumo di farmaci per il diabete ma risulta essere tra i paesi con un tasso di obesità più alto (67.7 nel 2021).
+Ancora la Francia nel 2019 risulta essere tra i paesi con un alto tasso di consumo di farmaci per il diabete, mentre presenta un basso indice di obesità (45.3); stesso discorso vale per la Corea (36.7).
+Per quanto riguarda gli altri paesi, si ha corrispondenza tra i due valori studiati.
+
+Dal sito <https://ourworldindata.org/obesity>, invece, si è estratta la prevalenza stimata dell'obesità, basata su indagini sulla popolazione generale e modelli statistici dal 2010 al 2016.
+
+![Errore caricamento immagine!](share-of-adults-defined-as-obese.png) Possiamo notare che in questo caso c'è stato un generale trend in aumento, proprio come per il consumo di farmaci per il diabete .
+
+## Statistica descrittiva
+
+La **statistica descrittiva** è costituita da un insieme di metodi di natura logica e matematica atti a raccogliere, elaborare, analizzare ed interpretare dati allo scopo di descrivere fenomeni collettivi e di estendere la descrizione di certi fenomeni osservati ad altri fenomeni dello stesso tipo non ancora osservati.
+E' utilizzata per analizzare il comportamento dei fenomeni oggetto di studio.
+Prima di iniziare un'elaborazione dei dati è necessario avere informazioni generali sul fenomeno tramite l'analisi di misure di sintesi.
+In R per calcolare le statistiche descrittive di tutte le variabili numeriche contenute nel data frame si usa la funzione *descr(dfDiabete).*
+
+```{r statistiche_variabili, echo=FALSE, warning=FALSE}
+library(summarytools)
+descr(dfDiabete)
+```
+
+Tale funzione mostra in output:
+
+\-**media campionaria:** la media aritmetica del campione;
+
+\-**deviazione standard:** la radice quadrata della varianza campionari
+
+\-**min:** il valore minimo assunto;
+
+\-**Q1**: è il **primo quartile**, ovvero il minimo valore osservato la cui funzione di distribuzione empirica supera 0.25;
+
+\-**mediana:** indica un punto centrale intorno al quale si dispongono lo stesso numero di valori sia a destra che a sinistra;
+
+\-**Q3: terzo quartile**, ovvero il minimo valore osservato la cui funzione di distribuzione empirica supera 0.75;
+
+\-**Max:** il valore massimo assunto;
+
+\-**deviazione mediana assoluta:** misura la dispersione statistica di un campione;
+
+\-**IQR: scarto interquartile**, la differenza tra il terzo e il primo quartile;
+
+\-**coefficiente di variazione:** quantifica quanto è grande il valore di una deviazione standard rispetto alla media;
+
+\-**skewness:** è la proprietà di una distribuzione di non poter essere suddivisa in due parti specularmente uguali;
+
+\-**curtosi:** indica la forma della distribuzione dei dati.
+
+## Statistica descrittiva univariata
+
+### Funzione di distribuzione
+
+Il dataset è composto da soli fenomeni quantitativi ed è quindi utile definire la **funzione di distribuzione empirica**.
+Nel caso *discreto* questa funzione è definita a partire dalle frequenze relative cumulate.
+Consideriamo una variabile quantitativa e indichiamo con $z_1, z_2, ..., z_k$ i valori distinti da essa assunti e assumiamo che essi siano ordinati in ordine crescente.
+Denotiamo con $n_1$ il numero di volte in cui ciascun valore $z_i$ è presente nel campione, ossia la frequenza assoluta con cui esso appare nel campione, e con $f_i = n_i/n$ le frequenze relative.
+Le frequenze relative cumulative sono $F_i = f_1+f_2+...+f_i = (n_1+n_2+...n_i)/n (i = 1,2,...k)$ dove $F_i$ rappresenta la proporzione dei dati del campione minori o uguali di $z_i$.
+La funzione di distribuzione empirica $F(x)$ è così definita: $$F(x) = {\#\{x_i \le x,i = 1,2,...,n\}\over n} = \begin{array}{ccc}
+0, x<z_1 \\
+f_1, z_1 \le x < z_2 \\
+... \\
+f_i, z_i \le x < z_{i+1} \\
+... \\
+1, x \ge z_k\\
+\end{array}$$
+
+La funzione di distribuzione empirica è una funzione non decrescente, assume il valore a sinistra in corrispondenza ad ogni punto di salto, vale 0 per ogni valore minore dell'osservazione minima e vale 1 per ogni valore maggiore o uguale dell'osservazione massima.
+Tale funzione ci permette di capire *come si distribuiscono i dati osservati nel fenomeno*, in particolare come si comportano le sue caratteristiche.
+Viene definita a partire dalle frequenze relative cumulate.
+Ho deciso di studiare la funzione di distribuzione empirica relativa agli anni 2012, 2013, 2020, 2021.
+In R è possibile utilizzare la funzione *ecdf()* per disegnare il grafico della funzione di distribuzione empirica per le variabili quantitative discrete.
+
+```{r emp_discreta, echo=FALSE, fig.height=10, fig.width=10}
+par ( mfrow =c (2 ,2) )
+plot ( ecdf ( dfDiabete$Anno2012 ) , main = " Funzione di distribuzione empirica discreta Anno2012 " , verticals = TRUE , col =" red ")
+abline (h =0.25 , lty =1 , col =" blue ")
+abline (h =0.5 , lty =2 , col =" blue ")
+abline (h =0.75 , lty =3 , col =" blue ")
+
+plot ( ecdf ( dfDiabete$Anno2013 ) , main = " Funzione di distribuzione empirica discreta Anno2013 " , verticals = TRUE , col =" red ")
+abline (h =0.25 , lty =1 , col =" blue ")
+abline (h =0.5 , lty =2 , col =" blue ")
+abline (h =0.75 , lty =3 , col =" blue ")
+
+plot ( ecdf ( dfDiabete$Anno2020 ) , main = " Funzione di distribuzione empirica discreta Anno2020 " , verticals = TRUE , col =" red ")
+abline (h =0.25 , lty =1 , col =" blue ")
+abline (h =0.5 , lty =2 , col =" blue ")
+abline (h =0.75 , lty =3 , col =" blue ")
+
+plot ( ecdf ( dfDiabete$Anno2021 ) , main = " Funzione di distribuzione empirica discreta Anno2021 " , verticals = TRUE , col =" red ")
+abline (h =0.25 , lty =1 , col =" blue ")
+abline (h =0.5 , lty =2 , col =" blue ")
+abline (h =0.75 , lty =3 , col =" blue ")
+```
+
+### Indici di sintesi
+
+Gli **indici di sintesi**, detti anche statistiche, sono utili a descrivere dei dati numerici.
+Si dividono in *misure di centralità* e *dispersione dei dati*.
+Le prime sono la media, mediana e moda, mentre le seconde sono la varianza e la deviazione standard.
+Tali indici sono riportati di seguito con i rispettivi codici in R per gli anni 2012, 2013, 2020, 2021.
+Possiamo visualizzare gli indici di sintesi dei dati oggetto di studio mediante la funzione *summary().*
+
+```{r indici_sintesi, echo=FALSE}
+summary(dfDiabete$Anno2012)
+summary(dfDiabete$Anno2013)
+summary(dfDiabete$Anno2020)
+summary(dfDiabete$Anno2021)
+```
+
+La **media** campionaria è la media artimetica di un campione di valori numerici di ampiezza n.
+
+```{r media, echo=FALSE}
+#Media
+print('media anno 2012')
+mean(dfDiabete$Anno2012)
+print('media anno 2013')
+mean(dfDiabete$Anno2013)
+print('media anno 2020')
+mean(dfDiabete$Anno2020)
+print('media anno 2021')
+mean(dfDiabete$Anno2021)
+```
+
+La **mediana** campionaria, dato un insieme di dati di ampiezza n ordinati in ordine crescente, è il valore in posizione $(n+1)/2$ se n è dispari, altrimenti è la media aritmetica dei valori che occupano le posizioni $n/2$ e $n/2+1$.
+
+```{r mediana, echo=FALSE}
+#Mediana
+print('mediana anno 2012')
+median(dfDiabete$Anno2012)
+print('mediana anno 2013')
+median(dfDiabete$Anno2013)
+print('mediana anno 2020')
+median(dfDiabete$Anno2020)
+print('mediana anno 2021')
+median(dfDiabete$Anno2021)
+```
+
+La **moda** campionaria di un insieme di dati è la modalità a cui è associata la frequenza più elevata.
+Se esistono più modalità con frequenza massima, ciascuna di esse è detto valore modale.
+Ha alcune proprietà molto importanti quali:
+
+\- è possibile identificare la moda per qualsiasi tipo di variabile;
+
+\- indica sempre un valore realmente osservato nel campione;
+
+\- non è influenzata da valori esterni;
+
+\- nel caso di distribuzioni di frequenze molto asimmetriche, la moda è il miglior indice per descrivere la tendenza centrale di un cmapione.
+
+```{r moda, echo=FALSE}
+#Moda
+print('moda anno 2012')
+table(dfDiabete$Anno2012)
+print('moda anno 2013')
+table(dfDiabete$Anno2013)
+print('moda anno 2020')
+table(dfDiabete$Anno2020)
+print('moda anno 2021')
+table(dfDiabete$Anno2021)
+```
+
+La **varianza** fornisce una misura della variabilità dei valori assunti dalla variabile stessa; nello specifico, la misura di quanto essi si discostino quadraticamente rispettivamente dalla media aritmetica o dal valore atteso.
+
+```{r varianza, echo=FALSE}
+#Varianza
+print('varianza anno 2012')
+var(dfDiabete$Anno2012)
+print('varianza anno 2013')
+var(dfDiabete$Anno2013)
+print('varianza anno 2020')
+var(dfDiabete$Anno2020)
+print('varianza anno 2021')
+var(dfDiabete$Anno2021)
+```
+
+La **deviazione standard** campionaria è la radice quadrata della varianza campionaria.
+
+```{r sd, echo=FALSE}
+#Deviazione standard
+print('deviazione standard anno 2012')
+sd(dfDiabete$Anno2012)
+print('deviazione standard anno 2013')
+sd(dfDiabete$Anno2013)
+print('deviazione standard anno 2020')
+sd(dfDiabete$Anno2020)
+print('deviazione standard anno 2021')
+sd(dfDiabete$Anno2021)
+```
+
+Il **coefficiente di variazione** è il rapporto tra la deviazione standard campionaria e il modulo della media campionaria.
+In R non esiste una funzione per calcolare tale valore ma dobbiamo definirla:
+
+$cv<-function(x){sd(x)/abs(mean(x))}$
+
+```{r cv, echo=FALSE}
+#Coefficiente di variazione
+cv<-function(x){sd(x)/abs(mean(x))}
+"coefficiente di variazione anno 2012"
+cv(dfDiabete$Anno2012)
+"coefficiente di variazione anno 2013"
+cv(dfDiabete$Anno2013)
+"coefficiente di variazione anno 2020"
+cv(dfDiabete$Anno2020)
+"coefficiente di variazione anno 2021"
+cv(dfDiabete$Anno2021)
+```
+
+Sulla base dei risultati ottenuti, possiamo notare che è presente la moda solo per l'anno 2021 ed è 78.5; ciò significa che negli altri casi non c'è alcun valore con frequenza superiore agli altri.
+Per descrivere la **forma** di una distribuzione si possono confrontare la media campionaria e la mediana campionaria.
+Se queste due misure sono uguali, la distribuzione di frequenze tende ad essere simmetrica; se la media campionaria è sensibilmente maggiore della mediana campionaria, la distribuzione di frequenze è più sbilanciata verso destra; se invece la media campionaria è sensibilmente minore della mediana campionaria la distribuzione di frequenze è più sbilanciata verso sinistra.
+Nel nostro caso i due valori sono molto simili, quindi la distribuzione di frequenze tende ad essere *simmetrica*.
+Inoltre, il coefficiente di variazione risulta essere minore di 0.5, ciò indica che la variabilità dei dati è contenuta e quindi la *media* può essere considerata un *buon indicatore*.
+E' possibile calcolare anche la **mediana per una distribuzione di frequenze** che rappresenta la modalità i-esima (i = 1,2,...,k) che soddisfa la doppia disuguaglianza $F_{i-1}<0.5, F_i\ge0.5$.
+Quindi tale mediana è un valore di sintesi che indica un punto centrale intorno al quale si dispone la distribuzione di frequenze.
+
+```{r medianadistribuzione, echo=FALSE}
+print("mediana per la distribuzione di frequenze 2012")
+round(relative2012, 2)
+print("mediana per la distribuzione di frequenze 2013")
+round(relative2013, 2)
+print("mediana per la distribuzione di frequenze 2020")
+round(relative2020, 2)
+print("mediana per la distribuzione di frequenze 2021")
+round(relative2021, 2)
+```
+
+La mediana di una distirbuzione di frequenze può essere individuata graficamente a partire dalla funzione di distribuzione empirica discreta.
+Si traccia la funzione di distribuzione empirica e sull'asse delle ordinate si individua il punto 0.5 e da questo si traccia una linea orizzontale.
+Il minimo valore osservato sulle ascisse la cui funzione di distribuzione empirica supera 0.5 è proprio la mediana.
+
+```{r graficomedianadistribuzione, echo=FALSE,fig.height=10, fig.width=10}
+par(mfrow=c(2,2))
+plot(ecdf(dfDiabete$Anno2012), main = "Funzione di distribuzione empirica \n discreta per 2012", verticals = TRUE, col = "red")
+abline(h=0.5, lty=2, col = "blue")
+plot(ecdf(dfDiabete$Anno2013), main = "Funzione di distribuzione empirica \n discreta per 2013", verticals = TRUE, col = "red")
+abline(h=0.5, lty=2, col = "blue")
+plot(ecdf(dfDiabete$Anno2020), main = "Funzione di distribuzione empirica \n discreta per 2020", verticals = TRUE, col = "red")
+abline(h=0.5, lty=2, col = "blue")
+plot(ecdf(dfDiabete$Anno2021), main = "Funzione di distribuzione empirica \n discreta per 2021", verticals = TRUE, col = "red")
+abline(h=0.5, lty=2, col = "blue")
+```
+
+### Forma di una distribuzione di frequenza
+
+Le media e la mediana, quindi, sono indici utili per comprendere la forma delle distribuzioni di frequenze.
+Esistono degli indici statistici che permettono di misurare quando una distribuzione di frequenza presenta simmetria o asimmetria o se è più o meno piccata.
+Tali indici sono la *simmetria* e la *curtosi*.
+
+L'**indice di skewness** permette di misurare la simmetria di una distribuzione di frequenze.
+Assegnato un insieme di dati numerisi $x_1, x_2,…x_n$ si definisce skewness campionaria il valore $\gamma = {m_3\over m_2^{3/2}}$ dove $m_3$ denota il momento centrato campionario di ordine 3.\
+Per calcolare tale valore si deve definire la seguente funzione in R:\
+`skw<-function(x){ n<- length(x) m2 <- (n-1)*var(x)/n  m3 <- (sum((x-mean(x))^3))/n m3/(m2^1.5)}`
+
+```{r skw, echo=FALSE}
+#Indice di skewness
+skw<-function(x){ 
+  n<- length(x) 
+  m2 <- (n-1)*var(x)/n 
+  m3 <- (sum((x-mean(x))^3))/n 
+  m3/(m2^1.5)
+}
+print("indice di skewness anno 2012")
+skw(dfDiabete$Anno2012)
+print("indice di skewness anno 2013")
+skw(dfDiabete$Anno2013)
+print("indice di skewness anno 2020")
+skw(dfDiabete$Anno2020)
+print("indice di skewness anno 2021")
+skw(dfDiabete$Anno2021)
+
+```
+
+Dai risultati possiamo notare che i valori riferiti all'anno 2012 presentano un'asimmetria negativa in quanto il valore calcolato $\gamma$ è minore di 0, mentre i valori riferiti agli anni 2013, 2020 e 2021 presentano un'asimmetria positiva.
+
+L'**indice di curtosi** permette di misurare la densità dei dati intorno alla media.
+Assegnato un insieme di dati numerici $x_1,x_2,…,x_n$, si definisce curtosi campionaria il valore $\gamma_2 = \beta_2 -3$ dove $\beta_2={m_4 \over m_2^2}$ è l'indice di Pearson.\
+Gli indici $\gamma_2$ e $\beta_2$ permettono di confrontare la distribuzione di frequenze dei dati con una densità di probabilità normale standard, caratterizzata da $\beta_2 = 3$ e indice di curtosi $\gamma_2 = 0$.\
+Anche in questo caso si deve definire la seguente funzione:\
+`curt<-function(x){n<-length(x)m2<-(n-1)*var(x)/nm4<-(sum((x-mean(x))^4))/nm4/(m2^2)-3}`
+
+```{r curtosi, echo=FALSE}
+#Indice di curtosi
+curt<-function(x){
+  n<-length(x)
+  m2<-(n-1)*var(x)/n
+  m4<-(sum((x-mean(x))^4))/n
+  m4/(m2^2)-3
+}
+print("indice di curtosi anno 2012")
+curt(dfDiabete$Anno2012)
+print("indice di curtosi anno 2013")
+curt(dfDiabete$Anno2013)
+print("indice di curtosi anno 2020")
+curt(dfDiabete$Anno2020)
+print("indice di curtosi anno 2021")
+curt(dfDiabete$Anno2021)
+```
+
+Dai risultati si evince che per gli anni 2012, 2013 e 2021 avremo una distribuzione di frequenze **platicurtica** in quanto $\beta_2<0$, ossia la distribuzione di frequenze è più piatta di una normale; per l'anno 2022 invece avremo una distribuzione di frequenze **leptocurtica** poichè $\beta_2>0$, ossia la distribuzione di frequenze è più piccata di una normale.
+
+## Statistica descrittiva bivariata
+
+La *statistica bivariata* è il ramo della statistica che si occupa dei metodi grafici e statistici per descrivere le relazioni che intercorrono tra due variabili.
+
+### Scatterplot
+
+Le relazioni tra variabili quantitative possono essere rappresentate graficamente mediante **diagrammi di dispersione (scatterplot)** in cui ogni coppia di osservazioni viene rappresentata sotto forma di un punto o di un cerchietto in un piano euclideo, il risultato finale è una nuvola di punti.
+Il grafico ottenuto mostra se esiste una relazione tra le variabili e di quale tipo è tale relazione.
+Calcolo gli indici statistici di posizione e di dispersione relativi alle variabili in esame, nel mio caso alle variabili 2012, 2013, 2020 e 2021 che voglio confrontare.
+
+```{r meanmed, echo=FALSE}
+mediana2012<-median(dfDiabete$Anno2012)
+media2012<-mean(dfDiabete$Anno2012)
+sd2012<-sd(dfDiabete$Anno2012,na.rm = TRUE)
+mediana2013<-median(dfDiabete$Anno2013)
+media2013<-mean(dfDiabete$Anno2013)
+sd2013<-sd(dfDiabete$Anno2013,na.rm = TRUE)
+mediana2020<-median(dfDiabete$Anno2020)
+media2020<-mean(dfDiabete$Anno2020)
+sd2020<-sd(dfDiabete$Anno2020,na.rm = TRUE)
+mediana2021<-median(dfDiabete$Anno2021)
+media2021<-mean(dfDiabete$Anno2021)
+sd2021<-sd(dfDiabete$Anno2021)
+
+```
+
+|                     | 2012  | 2013  | 2020  | 2021  |
+|---------------------|-------|-------|-------|-------|
+| Mediana campionaria | 60.75 | 62.6  | 77.15 | 78.1  |
+| Media campionaria   | 60.96 | 63.16 | 75.51 | 78.52 |
+| Deviazione standard | 14.07 | 12.97 | 13.99 | 16.12 |
+
+Si nota che i valori di media e mediana aumentano con l'avanzare degli anni; la deviazione standard, invece, assume un valore alto già nel 2012.\
+Successivamente si realizza lo scatterplot considerando Anno2020 come variabile indipendente e Anno2021 come variabile dipendente (stesso discorso per la coppia Anno2012-Anno2013); nello scatterplot sono visualizzate le coppie del data frame.
+Sono tracciate anche delle linee orizzontali e verticali in corrispondenza delle mediane campionarie e delle medie campionarie dei vettori Anno 2012, Anno 2013, Anno2020 e Anno2021.
+
+```{r scatterpolt, echo=FALSE,fig.height=10, fig.width=10}
+par(mfrow=c(2,1))
+plot ( dfDiabete$Anno2020 , dfDiabete$Anno2021 ,xlab = " 2012" , ylab ="2013" , col =" red ")
+abline ( v= median ( dfDiabete$Anno2012 ) , lty =1 , col =" magenta ")
+abline ( v= mean (dfDiabete$Anno2012 ) , lty =2 , col =" blue ")
+abline ( h= median ( dfDiabete$Anno2013 ) , lty =1 , col =" magenta ")
+abline (h = mean (  dfDiabete$Anno2013) , lty =2 , col =" blue ")
+
+legend ("topleft" , c (" Mediana " ," Media " ) , pch =0 , col =c( " magenta " ," blue ") ,cex =0.8)
+
+plot ( dfDiabete$Anno2020 , dfDiabete$Anno2021 ,xlab = " 2020" , ylab ="2021" , col =" red ")
+abline ( v= median ( dfDiabete$Anno2020 ) , lty =1 , col =" magenta ")
+abline ( v= mean (dfDiabete$Anno2020 ) , lty =2 , col =" blue ")
+abline ( h= median ( dfDiabete$Anno2021 ) , lty =1 , col =" magenta ")
+abline (h = mean (  dfDiabete$Anno2021) , lty =2 , col =" blue ")
+
+legend ("topleft" , c (" Mediana " ," Media " ) , pch =0 , col =c( " magenta " ," blue ") ,cex =0.8)
+
+```
+
+Si può notare che, in entrambi i casi, i dati (punti) sembrano posizionati intorno ad una retta ascendente e ciò induce a pensare che esista una **correlazione lineare positiva** tra le variabili, ovvero i valori delle due variabili tendono ad aumentare in parallelo.
+
+Quando si osservano più variabili quantitative per uno stesso gruppo è necessario vedere se esiste una correlazione tra le variabili.
+Per ottenere una misura quantitativa della correlazione tra le variabili si considera la **covarianza campionaria** che può avere segno positivo, negativo o nullo.
+La covarianza campionaria tra due variabili X e Y è così definita :  $C_{xy} = {1 \over n-1} \sum_{i=1}^n (x_i- \bar x)(y_i- \bar y) (n = 2,3,...)$.
+
+```{r cov, echo=FALSE}
+print("covarianza campionaria 2012-2013")
+cov(dfDiabete$Anno2012, dfDiabete$Anno2013, use = "complete.obs")
+print("covarianza campionaria 2020-2021")
+cov(dfDiabete$Anno2020, dfDiabete$Anno2021, use = "complete.obs")
+
+```
+
+Nei casi in esame entrambi i valori sono positivi e quindi le variabili sono *correlate positivamente*.
+
+Si può usare anche il **coefficiente di correlazione campionario** che è un indice adimensionale, non fa distinzione tra variabile dipendente e indipendente, può essere calcolato solo se entrambe le variabili sono quantitative, non cambia al variare dell'unità di misura delle variabili ed è fortemente influenzato dalla presenza di eventuali valori anomali.
+
+```{r corr, echo=FALSE}
+print("coefficiente di correlazione campionario 2012-2013")
+coranni1213<-cor(dfDiabete$Anno2012, dfDiabete$Anno2013, use = "complete.obs" )
+coranni1213
+print("coefficiente di correlazione campionario 2020-2021")
+coranni2021<-cor(dfDiabete$Anno2020, dfDiabete$Anno2021, use = "complete.obs" )
+coranni2021
+```
+
+I coefficienti di correlazione sono prossimi all'unità e ciò indica che esiste una *forte correlazione* tra i dati di Anno2012-Anno2013 e Anno2020-Anno2021.
+
+### Regressione lineare semplice
+
+Il **modello di regressione lineare semplice** è esprimibile attraverso l'equazione di una retta che riesce ad interpolare la nuvola di punti dello scatterplot meglio di tutte e altre possibili rette.
+Per effettuare l'analisi di regressione lineare si utilizza la funzione $lm(y˜x)$ che fornisce i valori dell'intercetta e del coefficiente angolare.
+
+```{r linear, echo=FALSE}
+lm ( dfDiabete$Anno2013 ~ dfDiabete$Anno2012 )
+lm ( dfDiabete$Anno2021 ~ dfDiabete$Anno2020 )
+```
+
+```{r regressione, echo=FALSE,fig.height=10, fig.width=10}
+par(mfrow=c(2,1))
+plot ( dfDiabete$Anno2012 , dfDiabete$Anno2013 , main =" Retta di regressione 2012-2013" , xlab = " 2012 ", ylab = " 2013" , col =" red " )
+plot ( dfDiabete$Anno2020 , dfDiabete$Anno2021 , main =" Retta di regressione 2020-2021" , xlab = " 2020 ", ylab = " 2021 " , col =" red " )
+
+```
+
+L'equazione della retta di regressione è $Y = \alpha+\beta$ X, dove $\beta$ è il **coefficiente angolare** e esprime quantitativamente la pendenza (inclinazione) della retta e $\alpha$ è **l'intercetta** e corrisponde all'ordinata del punto di intersezione della retta interpolante con l'asse delle ordinate.
+L'identificazione di questa retta viene ottenuta applicando il *metodo dei minimi quadrati*.
+Possiamo stimare i parametri $\alpha$ e $\beta$ a partire dalle medie campionarie, deviazioni standard campionarie e dal coefficiente di correlazione.
+
+```{r alphabeta, echo=FALSE}
+print("alpha e beta 2012-2013")
+beta1 <-( sd2013/ sd2012 )*coranni1213
+alpha1 <- media2013 - beta1 * media2012 
+c( alpha1 , beta1 )
+print("alpha e beta 2020-2021")
+beta2 <-( sd2021/ sd2020 )*coranni2021
+alpha2 <- media2021 - beta2 * media2020 
+c( alpha2 , beta2 )
+```
+
+Le rette di regressione risulteranno dunque essere $y=8.355 + 0.898x$ per gli anni 2012-2013 e $y = -4.868 + 1.104x$ per gli anni 2020-2021.
+In entrambi i casi il valore di $\beta$ è positivo ed infatti le nostre rette di regressione sono crescenti.
+Le rappresentazioni delle rette calcolate possono essere aggiunte allo scatterplot facendo uso della funzione *abline()*.
+
+```{r rettaregressione, echo=FALSE,fig.height=10, fig.width=10}
+par(mfrow=c(2,1))
+plot ( dfDiabete$Anno2012 , dfDiabete$Anno2013 , main =" Retta di regressione 2012-2013" , xlab = " 2012 ", ylab = " 2013" , col =" red " )
+abline ( lm ( dfDiabete$Anno2013 ~ dfDiabete$Anno2012 ) , col =" blue ")
+plot ( dfDiabete$Anno2020 , dfDiabete$Anno2021 , main =" Retta di regressione 2020-2021" , xlab = " 2020 ", ylab = " 2021 " , col =" red " )
+abline ( lm ( dfDiabete$Anno2021 ~ dfDiabete$Anno2020 ) , col =" blue ")
+```
+
+#### Residui
+
+Una volta calcolati i valori dei coefficienti $\alpha$ e $\beta$ e disegnata la retta di regressione che interpola la nuvola dei punti nel corrispondente scatterplot, è possibile osservare quanto la retta di regressione si adatta ai punti che individuano le osservazioni.
+Esistono degli **scostamenti (residui)** tra le ordinate dei valori osservati e i corrispondenti valori stimati.
+I *residui* sono così definiti $E_i = y_i - \hat y_i = y_i - (\alpha + \beta x_i) (i = 1,2,...,n)$.
+La media campionaria dei residui $\bar E$ è nulla, ossia in media gli scostamenti positivi e negativi si compensano.
+Si determinano i valori stimati e i residui e la media, mediana, varianza e deviazione standard dei residui.
+In R per calcolare il vettore dei valori stimati $(\hat y_1, \hat y_2, ..., \hat y_n)$ si utilizza la funzione *fitted()* che crea un vettore lungo n che contiene le ordinate sulla retta di regressione.; invece per calcolare il vettore dei residui $(E_1, E_2, … E_n)$ si utilizza la funzione *resid()*.
+
+```{r stimati_resid, echo=FALSE}
+#determinano i valori stimati
+print("vettore dei valori stimati 2012-2013")
+stime1213 <- fitted ( lm ( dfDiabete$Anno2013 ~ dfDiabete$Anno2012 ))
+stime1213
+print("vettore dei valori stimati 2020-2021")
+stime2021 <- fitted ( lm ( dfDiabete$Anno2021 ~ dfDiabete$Anno2020 ))
+stime2021
+print("vettore dei residui 2012-2013")
+residui1213 <- resid ( lm ( dfDiabete$Anno2013 ~ dfDiabete$Anno2012 ))
+residui1213
+print("vettore dei residui 2020-2021")
+residui2021 <- resid ( lm ( dfDiabete$Anno2021 ~ dfDiabete$Anno2020 ))
+residui2021
+linearmodel1213 <- lm ( dfDiabete$Anno2013 ~ dfDiabete$Anno2012 )
+print("mediana campionaria dei residui 2012-2013")
+median(linearmodel1213$residuals)
+print("varianza campionaria dei residui 2012-2013")
+var(linearmodel1213$residuals)
+print("deviazione standard campionaria dei residui 2012-2013")
+sd(linearmodel1213$residuals)
+linearmodel2021 <- lm ( dfDiabete$Anno2021 ~ dfDiabete$Anno2020 )
+print("mediana campionaria dei residui 2020-2021")
+median(linearmodel2021$residuals)
+print("varianza campionaria dei residui 2020-2021")
+var(linearmodel2021$residuals)
+print("deviazione standard campionaria dei residui 2020-2021")
+sd(linearmodel2021$residuals)
+```
+
+E' possibile rappresentare graficamente i residui aggiungendo allo scatterplot precedente dei segmenti verticali che congiungono i valori stimati e i valori osservati, rappresentando i valori dei residui rispetto alle osservazioni e rappresentando i residui standardizzati rispetto ai valori stimati.
+Realizziamo i grafici dei residui ottenuti aggiungendo dei segmenti verticali che visualizzano i residui.
+
+```{r reg_residui, echo=FALSE,fig.height=10, fig.width=10}
+par(mfrow=c(2,1))
+plot ( dfDiabete$Anno2012 , dfDiabete$Anno2013 , main =" Retta di regressione e residui 2012-2013" , xlab = " 2012" , ylab =" 2013" , col =" red ")
+abline ( lm ( dfDiabete$Anno2013 ~ dfDiabete$Anno2012 ) , col =" blue ")
+stime <- fitted ( lm ( dfDiabete$Anno2013 ~ dfDiabete$Anno2012 ) )
+segments ( dfDiabete$Anno2012 , stime1213 , dfDiabete$Anno2012 , dfDiabete$Anno2013 ,col =" magenta " )
+
+plot ( dfDiabete$Anno2020 , dfDiabete$Anno2021 , main =" Retta di regressione e residui 2020-2021" , xlab = " 2020" , ylab =" 2021" , col =" red ")
+abline ( lm ( dfDiabete$Anno2021 ~ dfDiabete$Anno2020 ) , col =" blue ")
+stime <- fitted ( lm ( dfDiabete$Anno2021 ~ dfDiabete$Anno2020 ) )
+segments ( dfDiabete$Anno2020 , stime2021 , dfDiabete$Anno2020 , dfDiabete$Anno2021 ,col =" magenta " )
+
+```
+
+Si può studiare in modo più accurato il modo con cui la retta di regressione interpola i dati e come i residui si dispongono intorno alla retta interpolante influenzandone la posizione attraverso il diagramma dei residui.
+Tale diagramma è un grafico in cui i valori dei residui sono posti sull'asse delle ordinate e quelli della variabile indipendente sull'asse delle ascisse.
+
+```{r residui, echo=FALSE,fig.height=10, fig.width=10}
+par ( mfrow =c (2 ,1) )
+plot ( dfDiabete$Anno2012 , residui1213 , main =" Diagramma dei residui 2012-2013" ,xlab = " 2012 " , ylab =" Residui " , pch =9 , col =" red " )
+abline ( h =0 , col =" blue " , lty =2)
+plot ( dfDiabete$Anno2020 , residui2021 , main =" Diagramma dei residui 2020-2021" ,xlab = " 2020 " , ylab =" Residui " , pch =9 , col =" red " )
+abline ( h =0 , col =" blue " , lty =2)
+
+```
+
+I punti indicano la posizione dove si collocano i residui rispetto ai valori attesi.
+La retta orizzontale è posta nello zero e corrisponde alla media campionaria dei residui.
+Si nota che i punti sono disposti in modo casuale attorno alla linea orizzontale e non si evidenzia alcun comportamento particolare nella distribuzione dei punti.
+
+E' possibile calcolare il valore dei **residui standardizzati** $E_i^{(s)} = {E_i \over s_E}$ per capire se esiste qualche *relazione tra i residui e i residui standardizzati*.
+E' possibile realizzare un grafico in cui tali residui standardizzati (ordinate) vengono disegnati in funzione dei valori stimati (ascisse) mediante la retta di regressione.
+I residui standardizzati sono caratterizzati da media campionaria nulla e varianza unitaria.
+
+```{r residuistand, echo=FALSE,fig.height=10, fig.width=10}
+print("residui standard 2012-2013")
+residuistandard1213<-residui1213/sd(residui1213)
+residuistandard1213
+print("residui standard 2020-2021")
+residuistandard2021<-residui2021/sd(residui2021)
+residuistandard2021
+par(mfrow=c(2,1))
+plot(stime1213, residuistandard1213, main = "Residui standard rispetto ai valori stimati 2012-2013", xlab="Valori stimati", ylab="Residui standard", pch=5, col = "red")
+abline(h=0, col="blue",lty=2)
+plot(stime2021, residuistandard2021, main = "Residui standard rispetto ai valori stimati 2020-2021", xlab="Valori stimati", ylab="Residui standard", pch=5, col = "red")
+abline(h=0, col="blue",lty=2)
+```
+
+Anche in questo caso i punti sono disposti casualmente attorno alla linea orizzonatale (media campionaria dei residui standardizzati) e non si evidenzia alcuna tendenza particolare nella distribuzione dei punti.
+
+#### Coefficiente di determinazione
+
+Poichè si è interessati a vedere quanto la retta si adatta ai dati, l'accento può essere posto sul quadrato del coefficiente di correlazione e su quanto esso si avvicini ad uno e quindi che tutti i punti tenderanno ad allinearsi lungo la retta di regressione.
+Il *coefficiente di determinazione (r-square)* per la regressione lineare semplice è il rapporto tra la varianza dei valori stimati tramite la retta di regressione e la varianza dei valori osservati.
+Nel caso di regressione lineare semplice, il coefficiente di determinazione coincide con il quadrato del coefficiente di correlazione.
+
+```{r cor, echo=FALSE}
+print("coefficiente di determinazione 2012-2013")
+(cor(dfDiabete$Anno2012, dfDiabete$Anno2013))^2
+print("coefficiente di determinazione 2020-2021")
+(cor(dfDiabete$Anno2020, dfDiabete$Anno2021))^2
+#summary(lm(dfDiabete$Anno2021 ~ dfDiabete$Anno2020))$r.square
+```
+
+Dal momento che i coefficienti di determinazione sono vicini all'unità, allora le rette interpolano bene i nostri dati e quindi tutti i punti tendono ad allinearsi lungo la retta di regressione.
+
+### Regressione lineare multipla
+
+Il *modello di regressione lineare multipla* viene utilizzato per spiegare la relazione tra una variabile quantitativa Y, detta **variabile dipendente**, e le **variabili quantitative indipendenti** $X_1, X_2, . . . , X_p$.
+Tale modello è esprimibile attraverso l'equazione: $y = \alpha + \beta _1 x_1 + \beta _2 x_2 + ... + \beta _p x_p$ dove $\alpha$ è l'**intercetta** e $\beta _1, \beta _2, ... \beta_p$ sono i **regressori**.
+In particolare, $\beta _1$ rappresenta l'inclinazione di Y rispetto alla variabile $X_1$ tenendo costanti le variabili $X_1, X_2, ..., X_p$, $\beta_p$ rappresenta l'inclinazione di Y rispetto alla variabile $X_p$ tenendo costanti le variabili $X_1, X_2, ..., X_(p-1)$.
+Si calcolano due matrici *cov(dfDiabete)* e *cor(dfDiabete)* i cui elementi sono le covarianze e le correlazioni tra coppie di variabili e tali matrici sono simmetriche.
+La **matrice delle covarianze** contiene sulla diagonale principale la varianza delle singole colonne del data frame, mentre la **matrice delle correlazioni** contiene il numero 1 sulla diagonale principale.
+La matrice di correlazione misura la forza del legame di natura lineare esistente tra tutte le coppie di variabili quantitative, ossia misura la forza del legame di natura lineare esistente tra tutte le coppie di variabili quantitative.
+
+```{r covcor, echo=FALSE}
+print("matrice delle covarianze")
+cov(dfDiabete)
+print("matrice delle correlazioni")
+cor(dfDiabete)
+```
+
+La funzione *pairs()* permette di visualizzare in un'unica finestra grafica più scatterplot ottenuti mettendo in relazione tutte le coppie di variabili quantitative definite nel data frame.
+
+```{r scatcoppie, echo=FALSE,fig.height=10, fig.width=10}
+pairs(dfDiabete, main="Scatterplot per le coppie di variabili", col = "purple")
+
+```
+
+Nel modello di regressione lineare multipla, a differenza del modello semplice, avremo diversi coefficienti angolari, uno per ciascuna variabile indipendente.
+
+Per effettuare l'analisi di regressioni lineari multiple si utilizza la funzione $lm(y˜x_1 + x_2 + . . . + x_p)$ ed è possibile visualizzare tutti i coefficienti.
+
+```{r modellomult, echo=FALSE}
+multiplelinearmodel<-lm(dfDiabete$Anno2021~dfDiabete$Anno2020+dfDiabete$Anno2019+dfDiabete$Anno2018 )
+multiplelinearmodel
+multiplelinearmodel$coefficients
+```
+
+Da cui ricaviamo che l'intercetta $\alpha = -4.0147$ e i tre regressori sono $\beta_1 = 1.3560, \beta_2 = -0.7585, \beta_3 = 0.4972$.
+L'equazione della retta sarà quindi $y = -4.01 +1.35x_1 .- 0.75x_2 + 0.49 x_3$ I regressori $\beta_1 e \beta_3$ sono positivi e quindi avranno un effetto positivo sui valori del 2020, a differenza del regressore $\beta_2$ che è negativo.
+
+Anche in questo caso i **residui** mostrano di quanto si discostano i valori osservati dai valori stimati con la regressione lineare multipla.
+Calcoliamo dunque i valori stimati e i residui e le relative mediana, varianza e deviazione standard.
+
+```{r stimemult, echo=FALSE}
+print("vettore delle stime")
+stimemult<-fitted(multiplelinearmodel)
+stimemult
+print("vettore dei residui")
+residuimult<-resid(multiplelinearmodel)
+residuimult
+print("mediana campionaria dei residui")
+median(multiplelinearmodel$residuals)
+print("varianza campionaria dei residui")
+var(multiplelinearmodel$residuals)
+print("deviazione standard campionaria dei residui")
+sd(multiplelinearmodel$residuals)
+```
+
+Anche nel modello multivariato è importante calcolare i **residui standardizzati** e rappresentarli in un grafico in cui tali residui standardizzati (ordinate) vengono disegnati in funzione dei valori stimati (ascisse) con il metodo dei minimi quadrati.
+
+```{r residuimultstand, echo=FALSE,fig.height=10, fig.width=10}
+print("vettore dei residui standardizzati")
+residuimultstandard<-residuimult/sd(residuimult)
+residuimultstandard
+plot(stimemult, residuimultstandard, main="Residui standard rispetto ai valori stimati", xlab = "Valori stimati", ylab="Residui standard", pch=5, col="red")
+abline(h=0, col="blue", lty=2)
+
+```
+
+I punti indicano la posizione dove si collocano i residui standardizzati rispetto ai valori stimati con la retta di regressione.
+La retta orizzontale è posizionata nello zero, che corrisponde alla media campionaria dei residui standardizzati.
+Anche in questo caso i punti sono disposti quasi casualmente attorno alla linea orizzontale e non si evidenzia alcuna tendenza particolare nella distribuzione dei punti.
+
+Il **coefficiente di determinazione** in un modello di regressione lineare multipla è il rapporto tra la varianza dei valori stimati tramite la funzione di regressione multipla e la varianza dei valori osservati dalla variabile dipendente.
+Tale coefficiente $D^2$ risulta adimensionale e $0 \le D^2 \le 1$.
+Quando $D^2 = 0$ il modello non spiega per nulla i dati; invece quando $D^2=1$ il modello spiega perfettamente i dati.
+In R per calcolare l'indice $D^2$ per la regressione multipla si usa la funzione $summary(lm(y \sim x_1 + x_2 + ... + x_p))\$r.square$.
+
+```{r coefdetmult, echo=FALSE}
+summary(lm(multiplelinearmodel))$r.square
+
+```
+
+Il coefficiente di determinazione è 0.9316, ossia il modello di regressione multipla utilizzato è prossimo all'unità e quindi **può spiegare significativamente i dati**.
+Non si è ottenuto un significativo miglioramento del coefficiente di determinazione in quanto nel modello di regressione semplice era 0.9190 mentre adesso è 0.9316.
+
+## Analisi dei cluster
+
+L'*analisi dei cluster* è una metodologia che permette di raggruppare in sottoinsiemi, detti *cluster*, entità appartenenti ad un insieme più ampio.
+I metodi di analisi dei cluster permettono di raggiungere i seguenti obiettivi: individuazione di una reale tipologia, previsioni basate su gruppi, esplorazione dei dati, generazione di ipotesi di ricerca, verifica di ipotesi di ricerca, riduzione della complessità dei dati.
+Sia $I = {I_1, I_2, ..., I_n}$ un insieme di n individui appartenenti ad una popolazione.
+Assumiamo che esista un insieme di caratteristiche $C = {C_1, C_2, ..., C_p}$ che sono osservabili e sono possedute da ogni individuo in I.
+Il termine *osservabile* denota caratteristiche che danno origine a misure.
+Il problema dell'analisi dei cluster consiste nel determinare m sottoinsiemi, detti cluster, di individui in I, con m intero minore di n, tali che $I_i$ appartenga soltanto ad un unico sottoinsieme.
+Gli individui che sono assegnati allo stesso cluster sono detti *simili* mentre gli individui che sono assegnati a differenti cluster sono detti *dissimili*.
+L'obiettivo della seguente analisi dei cluster è applicare tutti i metodi studiati, calcolare la misura di non omogeneità e analizzare qual è il metodo più efficiente.
+E' infatti buona norma applicare una pluralità di metodi per verificare la stabilità dei gruppi e scegliere la partizione (e il metodo) che, a parità di numero di cluster, fornisce le migliori misure di non omogeneità.
+Per analizzare i nostri dati e creare dei cluster possiamo utilizzare le misure di distanza o di similarità, ovvero la distanza tra due individui differenti.
+Le *misure metriche di somiglianza* sono soprattutto basate sulle *funzioni distanza* tra i vettori delle caratteristiche.
+Occorre dunque definire tale funzione.
+Una funzione a valori reali $d(X_i,X_j)$ è detta **funzione distanza** se e soltanto se essa soddisfa le seguenti condizioni:
+
+**(i)** $d(X_i,X_j) = 0$ se e solo se $X_i = X_j$, con $X_i$ e $X_j$ in $E_p$;
+
+**(ii)** $d(X_i,X_j)\ge 0$ per ogni $X_i$ e $X_j$ in $E_p$;
+
+**(iii)** $d(X_i,X_j)=d(X_j,X_i)$ per ogni $X_i$ e $X_j$ in $E_p$;
+
+**(iv)** $d(X_i,X_j)\le d(X_i,X_k)+d(X_k,X_j)$ per ogni $X_i, X_j$ e $X_k$ in $E_p$.
+
+Le distanze tra tutte le possibili coppie di unità sono inserite in una matrice D di cardinalità $n$ x $n$.
+Calcoliamo dunque le distanze per il nostro data frame mediante la funzione *dist(X)* e avremo una matrice delle distanze, in questo caso euclidea.\
+La *metrica Euclidea* è così definita: $d_2(X_i,X_j) = \biggl[\sum_{k=1}^p{(x_{ij} - x_{jk})^2} \biggr]^2$
+
+```{r matricedist, echo=FALSE}
+#matrice scalata
+matscal<-scale(dfDiabete, center = TRUE, scale = TRUE)
+#distanze euclidee
+dist_E<-dist(matscal,diag=TRUE,upper=TRUE)
+dist_E
+```
+
+E' sufficiente considerare la matrice triangolare al di sopra o al di sotto della diagonale principale.
+Infatti, i termini sulla diagonale principale sono tutti uguali a zero mentre i termini simmetrici sono uguali a due a due, pertanto il numero di distanze che è necessario conoscere affinchè sia definita la posizione di ciascuna delle n variabili rispetto alle rimanenti $n - 1$ è $n(n - 1)/2$.
+In questo caso è stata applicata la metrica euclidea che però è fortemente influenzata dall'unità di misura in base alla quale è valutata ciascuna delle p caratteristiche.
+Per ovviare a tale problema, si sono scalate e standardizzate le misure riportate nel data frame iniziale prima di calcolare la matrice delle distanze mediante la funzione *scale(X)*.
+Mediante lo scalamento e la standardizzazione si ottengono dei nuovi dati le cui medie campionarie sono nulle e le varianze campionarie unitarie.
+Calcoliamo dunque la media campionaria, la varianza campionaria e la deviazione standard campionaria delle colonne della matrice mediante la funzione *apply()* di R.
+Alla matrice di partenza si può associare una matrice $W_x$ detta **matrice delle varianze e covarianze** che calcoliamo con la funzione *cov(matscal)*.
+
+```{r apply, echo=FALSE}
+print("media campionaria delle colonne di matscal")
+apply(matscal, 2, mean)
+print("varianza campionaria delle colonne di matscal")
+apply(matscal, 2, var)
+print("deviazione standard campionaria delle colonne di matscal")
+apply(matscal, 2, sd)
+print("matrice delle varianze e covarianze")
+WI<-cov(matscal)
+WI
+```
+
+### Misura di non omogeneità totale
+
+Si vuole adesso definire la **matrice statistica di non omogeneità** per l'insieme I di individui, di cardinalità $p x p$ definita come: $H_I = (n-1)W_I$ dove $W_I$ è la matrice delle varianze e covarianze calcolata in precedenza.
+La traccia di una matrice di non omogeneità di un insieme di individui fornisce una misura della dispersione dei dati intorno al valore medio dell'insieme dal quale è stata ricavata.
+Per l'analisi dei cluster è necessario calcolare il valore della misura di non omogeneità totale, calcolabile mediante diversi metodi.
+Si definisce *misura di non omogeneità statistica* dell'insieme I di individui la traccia della matrice $H_I$: $trHI = \sum_{r=1}^p{h_{rr} = (n-1)}\sum_{r=1}^p{s_r^2}$.
+
+Il **primo metodo** calcola la misura di non omogeneità statistica dell'insieme I di individui utilizzando tale definizione.
+
+```{r nonomo1, echo=TRUE}
+n<-nrow(dfDiabete)
+if(n>1)
+  trHI<-(n-1)*sum(apply(matscal,2,var)) else trHI<-0
+trHI
+
+```
+
+Tale misura è esprimibile anche in termine della somma dei quadrati delle distanze euclidee tra ogni vettore $X_1, X_2, ..., X_n$ e il vettore $\bar X$ delle medie campionarie.
+
+Il **secondo metodo** determina la matrice di non omogeneità statistica dell'insieme I di individui e somma gli elementi sulla diagonale.
+
+```{r nonom_tot2, echo=TRUE}
+n<-nrow(matscal)
+WI<-cov(matscal)
+HI<-(n-1)*WI
+trHI<-sum(diag(HI))
+trHI
+```
+
+Il **terzo metodo** calcola la misura di non omogeneità statistica dell'insieme I di individui utilizzando i quadrati delle distanze euclidee.
+
+```{r nonom_tot3, echo=TRUE}
+trHI<-sum(dist_E^2)/n
+trHI
+```
+
+### Metodi non gerarchici
+
+L'obiettivo dei metodi non gerarchici è quello di ottenere un'**unica partizione** degli n individui di partenza in cluster.
+Tali metodi consentono di riallocare gli individui già classificati ad un livello precedente.
+Il numero di cluster in cui suddividere l'insieme totale degli n individui può essere fissato a priori dal ricercatore oppure può essere determinato nel corso dell'analisi.
+Gli algoritmi di tipo non gerarchico procedono, data una prima partizione, a riallocare gli individui nel gruppo con centroide più vicino; fin quando per nessun individuo si verifica che sia minima la distanza rispetto al centroide di un gruppo diverso da quello a cui esso appartiene.
+Il centroide è un punto nello spazio che rappresenta un cluster e che corrisponde al punto medio dei punti del cluster stesso.
+Il metodo più utilizzato prende il nome di **k-means** e richiede che il numero di cluster sia specificato a priori e fornisce in output un'unica partizione.
+
+Tale metodo applica i seguenti passi:
+
+**1)** fissare a priori il numero k di cluster specificando i punti di riferimento iniziali che inducono una prima partizione provvisoria;
+
+**2)** considerare tutti gli individui e attribuire ciascuno di essi al cluster individuato dal punto di riferimento da cui ha distanza minore;
+
+**3)** calcolare il baricentro (centroide) di ognuno dei k gruppi così ottenuti;
+
+**4)** valutare la distanza di ogni unità da ogni centroide ottenuto al passo precedente.
+
+**5)** Ricalcolare i centroidi dei k gruppi così ottentui;
+
+**6)** ripetere il procedimento a partire dal punto 4) fino a che i centroidi non subiscono ulteriori modifiche rispetto all'iterazione precedente.
+Si procede iterativamente fino a raggiungere una configurazione stabile.
+
+Per garantire la convergenza della procedura iterativa, come misura di distanza tra i vettori delle caratterisiche e i centroidi viene utilizzata la distanza euclidea e si considera la matrice contenente i quadrati delle distanze euclidee.
+
+Applichiamo il **metodo k-means** tramite la funzione *kmeans(x, center, iter.max = N, nstart = M)* effettuando un'unica scelta casuale dei punti di riferimento con un numero massimo di iterazioni pari a 10.
+Attueremo una scelta casuale dei punti di riferimento.
+
+#### Due cluster
+
+Analizziamo il caso in cui il numero di cluster è pari a 2 e visualizziamo i cluster generati.
+
+```{r 2means, echo=FALSE}
+km2<-kmeans(matscal, center=2, iter.max = 10,nstart=1)
+km2
+plot(matscal, col = km2$cluster, main = "Metodo non gerarchico del k-means (k=2)")
+points(km2$centers, col=1:2, pch=8, cex=1)
+#visualizzare informazioni di km
+#str(km)
+#km2$cluster
+#km2$centers
+#km2$betweenss
+#km2$size
+```
+
+Tale metodo individua la seguente partizione in due cluster $G_1$ = {Repubblica Ceca, Finlandia, Francia, Germania, Ungheria, Paesi Bassi, Portogallo, Repubblica Slovacca, Slovenia, Spagna, Turchia, Regno Unito, Croazia} e $G_2$ = {Cile, Costa Rica, Danimarca, Estonia, Islanda, Italia, Corea, Lituania, Lussemburgo, Norvegia, Svezia.} Possiamo notare che il *rapporto tra between e total* è minore del 70% (60.5%), quindi dobbiamo scegliere un numero più alto di cluster.
+
+#### Tre cluster
+
+Analizziamo il caso in cui il numero di cluster è pari a 3.
+
+```{r 3means, echo=FALSE}
+km3<-kmeans(matscal, center=3, iter.max = 10,nstart=1)
+km3
+plot(matscal, col = km3$cluster, main = "Metodo non gerarchico del k-means (k=3)")
+points(km3$centers, col=1:3, pch=8, cex=1)
+```
+
+Sono individuati adesso tre partizioni: $G_1$ = {Costa Rica, Estonia, Italia, Corea, Lussemburgo, Portogallo, Repubblica Slovacca, Svezia, Turchia, Croazia}, $G_2$ = {Repubblica Ceca, Finlandia, Francia, Germania, Ungheria, Paesi Bassi, Slovenia, Spagna, Regno Unito} e $G_3$ = {Cile, Danimarca, Islanda, Lituania, Norvegia}.
+In questo caso il valore del rapporto tra between e total è maggiore del 70% (74.5%), dunque possiamo considerare tre cluster.
+
+I **vantaggi** del metodo k-means sono la velocità di esecuzione dei calcoli e la libertà che viene lasciata agli individui di raggrupparsi e allontanarsi.
+Uno **svantaggio**, invece, è che la classificazione finale può essere influenzata dalla scelta iniziale dei k vettori delle caratteristiche come punti di riferimento.
+
+### Metodi gerarchici
+
+I metodi di clustering gerarchico possono essere di due tipi: **agglomerativi** e **divisivi**.
+I metodi gerarchici di tipo agglomerativo partono da una situazione in cui si hanno n cluster distinti ognuno contenente un solo individuo per giungere, attraverso successive unioni dei cluster meno distanti tra loro, ad una situazione in cui si ha un solo cluster che contiene tutti gli n individui.
+Invece, i metodi gerarchici di tipo divisivo partono da una situazione in cui si ha un solo cluster che contiene tutti gli n individui per giungere, attraverso successive divisioni dei cluster più distanti tra loro, ad una situazione in cui si hanno n cluster distinti ognuno contenente un solo individuo.\
+L'obiettivo finale dei metodi gerarchici non è quello di ottenere una singola partizione degli n individui di partenza, ma di ottenere una sequenza di partizioni che possono essere rappresentate graficamente mediante una struttura ad albero, detta **dendrogramma**, nella quale sull'insieme delle ordinate sono riportati i livelli di distanza mentre sull'asse delle ascisse sono riportati i singoli individui.
+Ad ogni livello di distanza corrisponde una partizione, mentre ad ogni partizione corrispondono infiniti livelli di distanza compresi tra quelli che individuano due successive unioni o divisioni.
+Il dendrogramma fornisce un quadro completo della struttura dell'insieme in termini delle misure di distanza tra gli individui.\
+Sia $I = {I_1, I_2, ..., I_n}$ un insieme di n individui o entità appartenenti ad una popolazione.
+
+Saranno utilizzati tutti i metodi studiati per effettuare un confronto tra il rapporto between e total per valutare quale metodo è più opportuno da utilizzare, si considera un *buon risultato il rapporto con valore maggiore del 70%.*
+
+#### Metodo del legame singolo
+
+Applico il metodo gerarchico del legame singolo.
+In questo metodo *la distanza tra i gruppi è definita come la minima tra tutte le distanze che si possono calcolare tra ogni individuo del primo e del secondo gruppo.*\
+Nella procedura gerarchica si considera inizialmente, ossia al livello 0, un insieme di n cluster; al passo successivo si cerca nella matrice delle distanze il coefficiente di distanza minima e si raggruppano nello stesso cluster i due individui associati secondo tale coefficiente.
+
+```{r legamesingolo, echo=FALSE}
+#legame singolo
+diabete_s<-hclust(dist_E, method="single")
+#visualizza informazioni sull'oggetto cluster
+summary(diabete_s)
+str(diabete_s)
+#visualizzo combinazioni
+diabete_s$merge
+#distance level
+diabete_s$height
+
+```
+
+I risultati *merge* sono stati disposti su due colonne: i numeri con il segno negativo indicano i singoli individui, mentre i numeri positivi indicano i cluster che si formano; *height* indica invece la distanza in cui è avvenuta l'agglomerazione tra i cluster.
+
+Adesso possiamo costruire il dendrogramma per visualizzare i risultati ottenuti.
+
+```{r denrogrammasing, echo=FALSE,fig.height=10, fig.width=10}
+#dendrogramma legame singolo
+plot(diabete_s, hang=-1, xlab="Metodo gerarchico agglomerativo", sub="del legame singolo")
+rect.hclust(diabete_s,k=3,border=2:6)
+```
+
+Attuo adesso il calcolo e l'analisi delle misure di non omogeneità statistiche che saranno utilizzate per valutare la bontà di suddivisione in cluster ottenuta con i vari metodi.
+
+```{r analisisingolo, echo=FALSE}
+#analisi cluster metodo del legame singolo
+taglio_singolo<-cutree(diabete_s, k=3, h= NULL)
+taglio_singolo
+#cutree(diabete_s, k=NULL, h=8)
+numsingolo<-table(taglio_singolo)
+#classificare gli individui all'aumentare del numero di cluster
+#cutree(diabete_s, k=1:9)
+#lista di indici per i gruppi
+tagliolist_singolo<-list(taglio_singolo)
+tagliolist_singolo
+#aggregate(matscal, tagliolist_singolo, mean)
+#rappresentare graficamente i cluster
+#agmean_singolo<-aggregate(matscal, tagliolist_singolo, mean)[,-1]
+#plot(matscal, col = taglio_singolo, main = "Metodo del legame singolo")
+#points(agmean_singolo,pch=8,cex=1,col=1:2)
+#misure di non omogeneità dei due gruppi con metodo 2
+agvar_singolo<-aggregate(matscal,tagliolist_singolo,var)[,-1]
+agvar_singolo
+
+trH1S<-(numsingolo[[1]]-1)*sum(agvar_singolo[1,])
+if(is.na(trH1S)){
+  trH1S<-0
+}
+print("misura di non omogeneità del primo gruppo")
+trH1S
+trH2S<-(numsingolo[[2]]-1)*sum(agvar_singolo[2,])
+if(is.na(trH2S)){
+  trH2S<-0
+}
+print("misura di non omogeneità del secondo gruppo")
+trH2S
+trH3S<-(numsingolo[[3]]-1)*sum(agvar_singolo[3,])
+if(is.na(trH3S)){
+  trH3S<-0
+}
+print("misura di non omogeneità del terzo gruppo")
+trH3S
+#misura all'interno dei due gruppi
+within_singolo<-trH1S+trH2S+trH3S
+print("misura di non omogeneità interna")
+within_singolo
+#misura tra i cluster
+between_singolo<-trHI-trH1S-trH2S-trH3S
+print("misura di non omogeneità tra i cluster")
+between_singolo
+print("rapporto tra between e total")
+between_singolo/trHI
+```
+
+I risultati suggeriscono che il rapporto tra between e total risulta minore del 70% (14%), dunque i risultati di questo metodo per la divisione in tre cluster **non è soddisfacente**.
+Possiamo visualizzare un diagramma di Ven rappresentante i tre cluster e i punti appartenenti agli insiemi.
+
+```{r graficoclusS, echo=FALSE,fig.height=10, fig.width=10, warning=FALSE}
+
+library(cluster)
+clusplot(matscal, cex= 0.5, taglio_singolo, color = TRUE, shade = TRUE, labels=3, lines =0, xlab = "Legame singolo", ylab = "Distanza", main = "Metodo del legame singolo")
+```
+
+Dal diagramma possiamo notare che vi è un singolo grande gruppo e due più piccoli, questo potrebbe essere un effetto collaterale del metodo del legame singolo, proprio perchè viene a crearsi un effetto a catena che lega elementi dissimili poichè si guarda solo alla distanza minima.
+
+#### Metodo del legame completo
+
+Nel metodo del legame completo *la distanza tra due gruppi è definita come la massima tra tutte le distanze che si possono calcolare tra ogni individuo del primo gruppo e ogni individuo del secondo.* La massima distanza esistente tra gli individui dei due cluster rappresenta il diametro della sfera che contiene tutti i punti appartenenti ai due gruppi.
+Tale metodo identifica soprattutto gruppi di forma ellissoidale, ossia una serie di punti che si addensano intorno ad un nucleo centrale.
+
+```{r compl, echo=FALSE}
+#metodo del legame completo (deafult)
+diabete_co = hclust(dist_E,method="complete")
+#visualizza informazioni sull'oggetto cluster
+summary(diabete_co)
+str(diabete_co)
+diabete_co$height
+#visualizzo combinazioni, ogni passo costruisce un cluster - = elementi + = cluster
+diabete_co$merge
+#distance level
+diabete_co$height
+
+```
+
+```{r dendrcompleto, echo=FALSE,fig.height=10, fig.width=10}
+#dendrogramma legame completo
+plot(diabete_co, hang=-1, xlab="Metodo gerarchico agglomerativo", sub="del legame completo")
+rect.hclust(diabete_co,k=3,border=2:6)
+```
+
+A differenza del dendrogramma ottenuto dall'analisi del metodo a legame singolo, in questo caso abbiamo rami molto più lunghi poichè i gruppi si formano a livelli di distanza maggiori.
+Attuo adesso il calcolo e l'analisi del rapporto tra between e total.
+
+```{r analisicompleto, echo=FALSE}
+#analisi cluster legame completo
+taglio_co<-cutree(diabete_co, k=3)
+taglio_co
+#cutree(diabete_co, k=NULL, h=8)
+#num<-table(taglio_co)
+#classificare gli individui all'aumentare del numero di cluster
+#cutree(diabete_co, k=1:9)
+#lista di indici per i gruppi
+tagliolist_co<-list(taglio_co)
+tagliolist_co
+#aggregate(matscal, tagliolist_co, mean)
+#rappresentare graficamente i cluster
+#agmean_co<-aggregate(matscal, tagliolist_co, mean)[,-1]
+#plot(matscal, col = taglio_co, main = "Metodo del legame completo")
+#points(agmean_co,pch=8,cex=1,col=1:2)
+#misure di non omogeneità dei due gruppi con metodo 2
+num_co<-table(taglio_co)
+agvar_co<-aggregate(matscal,tagliolist_co,var)[,-1]
+trH1C<-(num_co[[1]]-1)*sum(agvar_co[1,])
+if(is.na(trH1C)){
+  trH1C<-0
+}
+print("misura di non omogeneità del primo gruppo")
+trH1C
+trH2C<-(num_co[[2]]-1)*sum(agvar_co[2,])
+if(is.na(trH2C)){
+  trH2C<-0
+}
+print("misura di non omogeneità del secondo gruppo")
+trH2C
+trH3C<-(num_co[[3]]-1)*sum(agvar_co[3,])
+if(is.na(trH3C)){
+  trH3C<-0
+}
+print("misura di non omogeneità del terzo gruppo")
+trH3C
+#misura all'interno dei due gruppi
+withinC<-trH1C+trH2C+trH3C
+print("misura di non omogeneità interna")
+withinC
+#misura tra i cluster
+betweenC<-trHI-withinC
+print("misura di non omogeneità tra i cluster")
+betweenC
+print("rapporto tra between e total")
+betweenC/trHI
+
+```
+
+I risultati suggeriscono che il rapporto tra between e total risulta maggiore del 70% (72%) e quindi i risultati di tale metodo sono **soddisfacenti** per la suddivisione in tre cluster.
+
+Possiamo visualizzare un diagramma di Ven rappresentante i tre cluster e i punti appartenenti agli insiemi.
+
+```{r graficclustC, echo=FALSE,fig.height=10, fig.width=10}
+clusplot(matscal, cex= 0.5, taglio_co, color = TRUE, shade = TRUE, labels=3, lines =0, xlab = "Legame completo", ylab = "Distanza", main = "Completo")
+```
+
+Notiamo che nel metodo del legame completo i gruppi hanno una forma ellissoidale e i primi due cluster sono molto distanti dal terzo.
+
+#### Metodo del legame medio
+
+Nel metodo del legame medio *la distanza tra due gruppi è definita come la media aritmetica delle distanze tra tutte le coppie di unità che compongono i due gruppi.* Uno svantaggio di tale metodo è che se le misure dei due cluster da unire sono molto differenti la distanza sarà molto vicina a quella del cluster più numeroso.
+
+```{r legamemedio, echo=FALSE}
+#metodo del legame medio
+diabete_average<-hclust(dist_E, method="average")
+#visualizza informazioni sull'oggetto cluster
+summary(diabete_average)
+str(diabete_average)
+#visualizzo combinazioni
+diabete_average$merge
+#distance level
+diabete_average$height
+
+```
+
+```{r dendrmedio, echo=FALSE,fig.height=10, fig.width=10}
+#dendrogramma legame medio
+plot(diabete_average, hang=-1,xlab="Metodo gerarchico agglomerativo", sub="del legame medio")
+rect.hclust(diabete_average,k=3,border=2:6)
+```
+
+Attuo adesso il calcolo e l'analisi del rapporto tra between e total.
+
+```{r analisimedio, echo=FALSE}
+#analisi cluster metodo del legame medio
+taglio_medio<-cutree(diabete_average, k=3, h=NULL)
+taglio_medio
+#cutree(diabete_average, k=NULL, h=8)
+nummedio<-table(taglio_medio)
+#classificare gli individui all'aumentare del numero di cluster
+#cutree(diabete_average, k=1:9)
+#lista di indici per i gruppi
+tagliolist_medio<-list(taglio_medio)
+tagliolist_medio
+#aggregate(matscal, tagliolist_medio, mean)
+#rappresentare graficamente i cluster
+#agmean_medio<-aggregate(matscal, tagliolist_medio, mean)[,-1]
+#plot(matscal, col = taglio_medio, main = "Metodo del legame medio")
+#points(agmean_medio,pch=8,cex=1,col=1:2)
+#misure di non omogeneità dei due gruppi con metodo 2
+agvar_medio<-aggregate(matscal,tagliolist_medio,var)[,-1]
+trH1M<-(nummedio[[1]]-1)*sum(agvar_medio[1,])
+if(is.na(trH1M)){
+  trH1M<-0
+}
+print("misura di non omogeneità del primo gruppo")
+trH1M
+trH2M<-(nummedio[[2]]-1)*sum(agvar_medio[2,])
+if(is.na(trH2M)){
+  trH2M<-0
+}
+print("misura di non omogeneità del secondo gruppo")
+trH2M
+trH3M<-(nummedio[[3]]-1)*sum(agvar_medio[3,])
+if(is.na(trH3M)){
+  trH3M<-0
+}
+print("misura di non omogeneità del terzo gruppo")
+trH3M
+#misura all'interno dei due gruppi
+within_medio<-trH1M+trH2M+trH3M
+print("misura di non omogeneità interna")
+within_medio
+#misura tra i cluster
+between_medio<-trHI-within_medio
+print("misura di non omogeneità tra i cluster")
+between_medio
+#valore tra between e total
+print("rapporto tra between e total")
+between_medio/trHI
+```
+
+I risultati suggeriscono che il rapporto tra between e total risulta minore del 70% (63%) e quindi i risultati di tale metodo **sono soddisfacenti** per la suddivisione in tre cluster.
+Possiamo visualizzare un diagramma di Ven rappresentante i tre cluster e i punti appartenenti agli insiemi.
+
+```{r graficclustMedio, echo=FALSE,fig.height=10, fig.width=10}
+clusplot(matscal, cex= 0.5, taglio_medio, color = TRUE, shade = TRUE, labels=3, lines =0, xlab = "Legame medio", ylab = "Distanza", main = "Metodo del legame medio")
+```
+
+#### Metodo del centroide
+
+Nel metodo del centroide la distanza tra i due gruppi è definita come *la distanza tra i centroidi, ossia tra le medie campionarie calcolate sugli individui appartenenti ai due gruppi.* Il metodo del centroide può dare origine a fenomeni gravitazionali, per cui i gruppi grandi tendono ad attrarre al loro interno i piccoli gruppi.
+
+```{r centroide, echo=FALSE}
+diabete_centr<-hclust((dist_E)^2, method="centroid")
+#visualizza informazioni sull'oggetto cluster
+summary(diabete_centr)
+str(diabete_centr)
+#visualizzo combinazioni
+diabete_centr$merge
+#distance level
+diabete_centr$height
+```
+
+```{r dendrcomp, echo=FALSE,fig.height=10, fig.width=10}
+#dendrogramma metodo del centroide
+plot(diabete_centr, hang=-1, xlab="Metodo gerarchico agglomerativo", sub="del centroide")
+rect.hclust(diabete_centr,k=3,border=2:6)
+```
+
+Attuo adesso il calcolo e l'analisi del rapporto tra between e total.
+
+```{r analisicentroide, echo=FALSE}
+#analisi cluster metodo del centroide
+taglio_centr<-cutree(diabete_centr, k=3, h=NULL)
+taglio_centr
+#cutree(diabete_centr, k=NULL, h=20)
+numcentr<-table(taglio_centr)
+#classificare gli individui all'aumentare del numero di cluster
+#cutree(diabete_centr, k=1:9)
+#lista di indici per i gruppi
+tagliolistcentr<-list(taglio_centr)
+tagliolistcentr
+#aggregate(matscal, tagliolistcentr, mean)
+#rappresentare graficamente i cluster
+#agmean_centr<-aggregate(matscal, tagliolistcentr, mean)[,-1]
+#plot(matscal, col = taglio_centr, main = "Metodo del centroide")
+#points(agmean_centr,pch=8,cex=1,col=1:2)
+#misure di non omogeneità dei due gruppi con metodo 2
+agvarcentr<-aggregate(matscal,tagliolistcentr,var)[,-1]
+trH1Centr<-(numcentr[[1]]-1)*sum(agvarcentr[1,])
+if(is.na(trH1Centr)){
+  trH1Centr<-0
+}
+print("misura di non omogeneità del primo gruppo")
+trH1Centr
+trH2Centr<-(numcentr[[2]]-1)*sum(agvarcentr[2,])
+if(is.na(trH2Centr)){
+  trH2Centr<-0
+}
+print("misura di non omogeneità del secondo gruppo")
+trH2Centr
+trH3Centr<-(numcentr[[3]]-1)*sum(agvarcentr[3,])
+if(is.na(trH3Centr)){
+  trH3Centr<-0
+}
+print("misura di non omogeneità del secondo gruppo")
+trH3Centr
+#misura all'interno dei due gruppi
+within_centr<-trH1Centr+trH2Centr+trH3Centr
+print("misura di non omogeneità interna")
+within_centr
+#misura tra i cluster
+between_centr<-trHI-within_centr
+print("misura di non omogeneità tra i cluster")
+between_centr
+print("rapporto tra between e total")
+between_centr/trHI
+```
+
+I risultati suggeriscono che il rapporto tra between e total risulta maggiore del 70% (70.7%) quindi i risultati di tale metodo sono **soddisfacenti** per la suddivisione in tre cluster.
+Possiamo visualizzare un diagramma di Ven rappresentante i tre cluster e i punti appartenenti agli insiemi.
+
+```{r graficoclusCentr, echo=FALSE,fig.height=10, fig.width=10}
+
+clusplot(matscal, cex= 0.5, taglio_centr, color = TRUE, shade = TRUE, labels=3, lines =0, xlab = "Centroide", ylab = "Distanza", main = "Metodo del centroide")
+```
+
+#### Metodo della mediana
+
+Il metodo della mediana è simile a quello del centroide, con la differenza che *la procedura è indipendente dalla numerosità dei cluster.* Infatti, quando due gruppi si aggregano, il nuovo centroide è calcolato come la semisomma dei due centroidi precedenti.
+
+```{r metmediana, echo=FALSE}
+#metodo della mediana
+diabete_mediana<-hclust((dist_E)^2  , method="median")
+#visualizza informazioni sull'oggetto cluster
+summary(diabete_mediana)
+str(diabete_mediana)
+#visualizzo combinazioni
+diabete_mediana$merge
+#distance level
+diabete_mediana$height
+
+
+```
+
+```{r dendrmediana, echo=FALSE,fig.height=10, fig.width=10}
+#dendrogramma metodo della mediana
+plot(diabete_mediana,hang=-1,xlab="Metodo gerarchico agglomerativo", sub="della mediana")
+rect.hclust(diabete_mediana,k=3,border=2:6)
+```
+
+Attuo adesso il calcolo e l'analisi del rapporto tra between e total.
+
+```{r analisimediana, echo=FALSE}
+#analisi cluster metodo della mediana
+taglio_mediana<-cutree(diabete_mediana, k=3, h=NULL)
+taglio_mediana
+#cutree(diabete_mediana, k=NULL, h=8)
+nummediana<-table(taglio_mediana)
+#classificare gli individui all'aumentare del numero di cluster
+#cutree(diabete_mediana, k=1:9)
+#lista di indici per i gruppi
+tagliolist_mediana<-list(taglio_mediana)
+tagliolist_mediana
+#aggregate(matscal, tagliolist_mediana, mean)
+#rappresentare graficamente i cluster
+agmean_mediana<-aggregate(matscal, tagliolist_mediana, mean)[,-1]
+#plot(matscal, col = taglio_mediana, main = "Metodo della mediana")
+#points(agmean_mediana,pch=8,cex=1,col=1:2)
+#misure di non omogeneità dei due gruppi con metodo 2
+agvar_mediana<-aggregate(matscal,tagliolist_mediana,var)[,-1]
+agvar_mediana
+trH1Mediana<-(nummediana[[1]]-1)*sum(agvar_mediana[1,])
+if(is.na(trH1Mediana)){
+  trH1Mediana<-0
+}
+print("misura di non omogeneità del primo gruppo")
+trH1Mediana
+trH2Mediana<-(nummediana[[2]]-1)*sum(agvar_mediana[2,])
+if(is.na(trH2Mediana)){
+  trH2Mediana<-0
+}
+print("misura di non omogeneità del secondo gruppo")
+trH2Mediana
+trH3Mediana<-(nummediana[[3]]-1)*sum(agvar_mediana[3,])
+if(is.na(trH3Mediana)){
+  trH3Mediana<-0
+}
+print("misura di non omogeneità del terzo gruppo")
+trH3Mediana
+#misura all'interno dei due gruppi
+within_mediana<-trH1Mediana+trH2Mediana+trH3Mediana
+print("misura di non omogeneità interna")
+within_mediana
+#misura tra i cluster
+between_mediana<-trHI-within_mediana
+print("misura di non omogeneità tra i cluster")
+between_mediana
+print("rapporto tra between e total")
+between_mediana/trHI
+
+```
+
+I risultati suggeriscono che il rapporto tra between e total risulta maggiore del 70% (73%) e quindi i risultati di tale metodo sono **soddisfacenti** per la suddivisione in tre cluster.
+Possiamo visualizzare un diagramma di Ven rappresentante i tre cluster e i punti appartenenti agli insiemi.
+
+```{r graficoclusMediana, echo=FALSE,fig.height=10, fig.width=10}
+clusplot(matscal, cex= 0.5, taglio_mediana, color = TRUE, shade = TRUE, labels=3, lines =0, xlab = "Mediana", ylab = "Distanza", main = "Metodo della mediana")
+```
+
+Voglio ora visualizzare tutti i dendrogrammi per riuscire a confrontarli
+
+```{r dendrogrammi, echo=FALSE,fig.height=20, fig.width=20}
+par(mfrow=c(2,3))
+plot(diabete_co, hang=-1, xlab="Metodo gerarchico agglomerativo", sub="del legame completo")
+plot(diabete_s, hang=-1, xlab="Metodo gerarchico agglomerativo", sub="del legame singolo")
+plot(diabete_mediana,hang=-1,xlab="Metodo gerarchico agglomerativo", sub="della mediana")
+plot(diabete_average, hang=-1,xlab="Metodo gerarchico agglomerativo", sub="del legame medio")
+plot(diabete_centr, hang=-1, xlab="Metodo gerarchico agglomerativo", sub="del centroide")
+```
+
+### Conclusioni
+
+|                | Metodo              | Risultato between/total |
+|----------------|---------------------|-------------------------|
+| Non gerarchico |                     | 74.5%                   |
+| Gerarchico     | del legame completo | 72.4%                   |
+| Gerarchico     | del legame singolo  | 14.4%                   |
+| Gerarchico     | del legame medio    | 63.1%                   |
+| Gerarchico     | del centroide       | 70.7%                   |
+| Gerarchico     | della mediana       | 73.3%                   |
+
+# Seconda parte
+
+## Scelta della variabile aleatoria
+
+Nella seconda parte si vuole usare la *statistica inferenziale* che fa uso non solo dei dati ma anche della probabilità.
+Nelle analisi statistiche si analizza un fenomeno che si manifesta su una popolazione che può essere finita o infinita.
+La conoscenza delle caratteristiche di una popolazione finita può essere ottenuta osservando la totalità delle entità della popolazione oppure un sottoinsieme di essa che è chiamato campione estratto.
+L'**inferenza statistica** ha lo scopo di estendere le misure ricavate dall'esame di un campione alla popolazione da cui il campione è stato estratto.
+*Con l'inferenza statistica si desidera studiare una popolazione che risulta essere descritta da una variabile aleatoria.* Tale variabile deve essere osservabile, ovvero devo essere in grado di osservare i valori di tale variabile.
+La legge di probabilità deve contenere dei parametri che non sono noti e l'obiettivo è avere informazioni su questi parametri.
+Tali informazioni sono ricavabili estraendo dalla popolazione un campione ed effettuare le misure su tale campione per poi trasferirle all'intera popolazione.
+Affinchè le conclusioni dell'inferenza statistica siano valide, il campione deve essere scelto in modo tale da essere **rappresentativo** della popolazione.
+L'inferenza statistica si basa su due metodi fondamentali di indagine: la **stima dei parametri** e la **verifica delle ipotesi**.
+
+## Problema
+
+Sono analizzati due server in base al numero di email che ricevono per un fissato numero di giorni.
+Si registrano le email arrivate al server1 per 30 giorni distinti e al server2 per 60 giorni distinti.
+Entrambi i campioni sono descritti da una **variabile aleatoria di Poisson**.
+
+## Distribuzione di Poisson
+
+Una **variabile aleatoria discreta** X assume un numero finito o al più numerabile di valori $x_1, x_2, ...$ con rispettive probabilità $p_X(x_1), p_X(x_2),...$ essendo $p_X(x_i) = P(X=x_i)$.
+Tramite R è possibile calcolare la funzione di probabilità, la funzione di distribuzione, la funzione per calcolare i quantili e la funzione che simula la variabile aleatoria mediante la generazione di sequenze di numeri pseudocasuali.
+Analizziamo prima una variabile aleatoria di Poisson, per poi passare al nostro problema.
+La distribuzione di Poisson interviene spesso nella descrizione di alcuni fenomeni coinvolgenti qualche tipo di conteggio, nel nostro caso il numero di email in arrivo nei server.
+
+Una variabile aleatoria X avente funzione di probabilità $p_X(x) = P(X = x) = \Bigg \{\left(\lambda^x\over x!\right) e^{-\lambda}, x = 0,1,... (\lambda>0),\ 0, altrimenti$
+
+è detta di distribuzione di Poisson di parametro $\lambda$.
+Per una variabile aleatoria di Poisson $X \sim P(\lambda)$ si ha $E(X) = \lambda$ e $Var(X) = \lambda$.
+
+Calcoliamo le probabilità di Poisson con la funzione *dpois(x, lambda)* dove x è il valore assunto dalla variabile aleatoria di Poisson considerata (nel nostro caso x = 0,1,...,7) e lambda è il vettore dei valori medi (nel nostro caso $\lambda = 2$).
+
+```{r poisson, echo=FALSE}
+#distribuzione di poisson
+x<-0:7
+lambda<-2
+dpois(x, lambda = lambda)
+
+```
+
+Possiamo poi confrontare la funzione di probabilità di Poisson per alcune scelte di $\lambda$ .
+
+```{r funzprobPois, echo=FALSE,fig.height=10, fig.width=10}
+par(mfrow=c(2,2))
+x<-0:7
+plot(x,dpois(x,lambda = 0.5),xlab="x",ylab="P(X=x)", type="h", main="lambda=0.5")
+
+x<-0:12
+plot(x,dpois(x,lambda = 2.5),xlab="x",ylab="P(X=x)", type="h", main="lambda=2.5")
+
+x<-0:12
+plot(x,dpois(x,lambda = 3),xlab="x",ylab="P(X=x)", type="h", main="lambda=3")
+
+x<-0:20
+plot(x,dpois(x,lambda = 6),xlab="x",ylab="P(X=x)", type="h", main="lambda=6")
+
+```
+
+Nel primo caso ($\lambda = 0.5), p_X(x)$ è strettamente decrescente; nel secondo caso con $\lambda=2.5$ notiamo che è presente un unico massimo in x=2; negli ultimi due casi avremo due massimi.
+
+Per il calcolo della **funzione di distribuzione** si utilizza la funzione *ppois(x, lambda, lower.tail=TRUE)* dove se lower.tail è TRUE calcola $P(X\le x)$, altrimenti calcola $P(X>x)$.
+
+```{r distribuzione, echo=FALSE}
+x<-0:7
+ppois(x, lambda=0.5)
+```
+
+Possiamo visualizzare le diverse funzioni di distribuzione.
+
+```{r plotdistribuzione, echo=FALSE,fig.height=10, fig.width=10}
+par(mfrow=c(2,2))
+x<-0:7
+plot(x,ppois(x,lambda = 0.5),xlab="x",ylab=expression(P(X<=x)),ylim=c(0,1), type="s", main="lambda=0.5")
+
+x<-0:12
+plot(x,ppois(x,lambda = 2.5),xlab="x",ylab=expression(P(X<=x)),ylim=c(0,1), type="s", main="lambda=2.5")
+
+x<-0:12
+plot(x,ppois(x,lambda = 3),xlab="x",ylab=expression(P(X<=x)),ylim=c(0,1), type="s", main="lambda=3")
+
+x<-0:20
+plot(x,ppois(x,lambda = 6),xlab="x",ylab=expression(P(X<=x)),ylim=c(0,1), type="s", main="lambda=6")
+```
+
+In R è possibile calcolare anche i quantili (percentili) della distribuzione di Poisson mediante la funzione *qpois(z, lambda)* dove z è il valore assunto dalla probabilità relativa al percentile z*100-esimo. Il risultato di tale funzione è il percentile z*100-esimo, ossia il più piccolo numero intero k assunto dalla variabile aleatoria di Poisson X tale che $P(X\le k)\ge z$.
+
+```{r quantiliPoisson, echo=FALSE}
+z<-c(0,0.25,0.5,0.75,1)
+qpois(z,lambda=2.5)
+```
+
+In questo caso per $\lambda = 2.5$ il primo quartile (25-esimo percentile) è $Q_1=1$, il secondo quartile o mediana (50-esimo percentile) è $Q_2=2$ e il terzo quartile (75-esimo percentile) è $Q_3=3$.
+Il minimo è $Q_0=0$ e il massimo è $Q_4= \infty$.
+
+E' possibile inoltre simulare la variabile aleatoria di Poisson generando una sequenza di numeri pseudocasuali mediante la funzione *rpois(N,lambda)* dove N è la lunghezza della sequenza da generare e calcolarne le frequenze relative.
+Vogliamo generare una sequenza di 60 numeri pseudocasuali simulando una variabile aleatoria di Poisson di valore medio $\lambda = 2.5$
+
+```{r variabilePoisson, echo=FALSE}
+sim<-rpois(60,lambda=2.5)
+sim
+print("frequenze assolute")
+table(sim)
+print("frequenze relative")
+table(sim)/length(sim)
+```
+
+E' possibile poi confrontare la funzione di probabilità di Poisson teorica con quella simulata all'aumentare di N.
+
+```{r plotprobabilità, echo=FALSE,fig.height=10, fig.width=10}
+par(mfrow=c(2,2))
+x<-0:20
+plot(x,dpois(x,lambda=3),xlab="x",ylab="Probabilità",type="h",main="lambda=3",xlim=c(0,10),ylim=c(0,0.25))
+
+sim1<-rpois(500,lambda=3)
+plot(table(sim1)/length(sim1),xlab="x",ylab="Frequenza relativa",type="h",main="lambda=3, N=500",xlim=c(0,10),ylim=c(0,0.25))
+
+sim2<-rpois(5000,lambda=3)
+plot(table(sim2)/length(sim2),xlab="x",ylab="Frequenza relativa",type="h",main="lambda=3, N=5000",xlim=c(0,10),ylim=c(0,0.25))
+
+sim3<-rpois(50000,lambda=3)
+plot(table(sim3)/length(sim3),xlab="x",ylab="Frequenza relativa",type="h",main="lambda=3, N=50000",xlim=c(0,10),ylim=c(0,0.25))
+```
+
+Possiamo notare che all'aumentare della lunghezza della sequenza generata, il grafico delle frequenze relative si avvicina sempre di più al grafico della funzione di probabilità di Poisson.
+
+### Stima puntuale
+
+Si vuole studiare una popolazione descritta da una variabile aleatoria osservabile X la cui funzione di distribuzione ha una forma nota ma contiene un parametro non noto.
+Il termine osservabile significa che si possono osservare i valori assunti dalla variabile aleatoria X e quindi il parametro non noto è presente soltanto nella legge di probabilità.
+Nei metodi di indagine dell'inferenza statistica si considera un campione casuale $X_1, X_2, ..., X_n$ di ampiezza n estratto dalla popolazione e si vogliono ottenere informazioni sui parametri non noti facendo uso di alcune variabili aleatorie dette statistiche e stimatori.
+Una **statistica** è una funzione misurabile e osservabile del campione casuale.
+Essendo la statistica osservabile, i valori da essa assunti dipendono soltanto dal campione osservato estratto dalla popolazione e i parametri non noti sono presenti soltanto nella funzione di distribuzione della statistica.
+Uno **stimatore** è una statistica i cui valori possono essere usati per stimare un parametro non noto della popolazione.
+I valori assunti da tale stimatore sono detti stime del parametro non noto.
+Gli stimatori tipicamente utilizzati sono la media campionaria e la varianza campionaria.
+
+#### Metodi per la ricerca di stimatori
+
+I principali metodi per trovare uno stimatore sono il **metodo dei momenti** e il **metodo della massima verosimiglianza**.
+L'idea alla base del *metodo dei momenti* è di porre il momento campionario assoluto uguale al corrispondente momento campionario.
+Occorre definire i momenti campionari, ovvero la media aritmetica delle potenze r-esime delle n osservazioni effettuate sulla popolazione.
+Affinchè il metodo dei momenti sia utilizzabile occorre che $E(X^r)=M_r(x_1,x_2,...,x_n)$ $(r=1,2,...,k)$ ammetta un'unica soluzione.
+In particolare, si desidera determinare lo stimatore del valore medio $\lambda$ di una popolazione di Poisson descritta dalla variabile aleatoria $X\sim P(\lambda)$.
+Occorre stimare il parametro $\lambda$.
+Le stime dei parametri ottenute con tale metodo dipendono dal campione osservato e quindi al variare dei possibili campioni osservati si ottengono gli stimatori dei parametri non noti della popolazione, detti *stimatori del metodo dei momenti*.
+Poichè in una popolazione di Poisson $E(X) = \lambda$, si ha che lo stimatore è proprio la media campionaria $\bar X$: $\hat\lambda$ = $(x_1+x_2+...+x_n)\over n$ $= \bar x$
+
+```{r momento, echo=FALSE}
+print("stima del parametro lambda")
+stimalambda<-mean(sim)
+stimalambda
+```
+
+La stima del parametro $\lambda$ per il nostro campione con il metodo dei momenti è $\hat \lambda = 2.46$.
+Per il *metodo della massima verosimiglianza* occorre definire la funzione di verosimiglianza che è la *funzione di probabilità congiunta* oppure la funzione densità di probabilità congiunta del campione casuale.
+Tale metodo consiste nel massimizzare la funzione di verosimiglianza rispetto ai parametri $\theta_1, \theta_2, ..., \theta_k$, quindi cerca di determinare da quale funzione di probabilità congiunta oppure di densità di probabilità congiunta è più verosimile che provenga il campione osservato.
+I valori di $\theta_1, \theta_2, ..., \theta_k$ che massimizzano la funzione di verosimiglianza sono indicati con $\hat \theta_1, \hat \theta_2, ...,\hat \theta_k$ e sono le *stime di massima verosimiglianza* dei parametri non noti $\theta_1, \theta_2, ..., \theta_k$ della popolazione.
+Tali stime dipendono dal campione osservato e quindi al variare dei possibili campioni osservati si ottengono gli stimatori di massima verosimiglianza dei parametri non noti della popolazione.
+Anche in questo caso la stima di verosimiglianza per parametro $\lambda$ per la popolazione di Poisson risulta essere la media campionaria $\bar E$.
+
+### Intervalli di fiducia approssimati
+
+Alla stima puntuale di un parametro non noto di una popolazione che è costituita da un singolo valore reale, spesso si preferisce sostituire un intervallo di valori detto **intervallo di confidenza**, ossia si cerca di determinare in base ai dati del campione, un limite superiore e uno inferiore entro i quali sia compreso il parametro non noto con un certo **coefficiente di confidenza**.
+Se la dimensione del campione è elevata (n\>30) è possibile utilizzare il *teorema centrale di convergenza* per determinare un intervallo di confidenza di grado $1-\alpha$ per il parametro non noto di una popolazione.
+Se il valore medio $E(X) = \mu$ e $Var(X) = \sigma^2$ della popolazione dipendono da un parametro non noto $\theta$ della popolazione, si nota la variabile aleatoria $Z_n$ può essere interpretata come variabile aleatoria di pivot poichè:
+
+-dipende dal campione casuale;
+
+-dipende dal parametro non noto $\theta$;
+
+-per grandi campioni la sua funzione di distribuzione è approssimativamente normale standard e quindi non contiene il parametro $\theta$ da stimare.
+
+Possiamo dunque applicare il *metodo pivotale in forma approssimata*.
+Nel nostro caso, consideriamo una popolazione di Poisson descritta da una variabile aleatoria $X \sim P(X)$ e il valore medio di una variabile aleatoria è $E(X) = \lambda$ e la varianza è $Var(X) = \lambda$ ed entrambi dipendono dal parametro non noto $\lambda$.
+Ricaviamo che $E(\bar X_n)=\lambda, Var(\bar X_n)=$ $\lambda\over n$.
+Applicando il teorema centrale di convergenza si ha che la variabile aleatoria converge in distribuzione ad una variabile aleatoria normale standard.
+Si supponga che il numero N(t) di email che arrivano ad un server nell'intervallo (0,t) sia distribuito secondo Poisson.
+Se in 100 osservazioni effettuate in intervalli di tempo di t = 30 giorni si riscontra che in media sono state ricevute 6 email, si vuole determinare una stima dell'intervallo di confidenza di grado $1 - \alpha = 0.95$ per il parametro $\alpha$.
+
+```{r intervallo, echo=FALSE}
+alpha<-1-0.95
+zalpha<-qnorm(1-alpha/2,mean=0,sd=1)
+zalpha
+n<-100
+medcamp<-6
+tempo<-30
+a2<-n
+a1<- -(2*n*medcamp+zalpha^2)
+a0<-n*medcamp^2
+polyroot(c(a0,a1,a2))/tempo
+```
+
+L'intervallo di confidenza approssimato è quindi (0.1846, 0.2166).
+La stima puntuale, ovvero 6/30 = 0.2, è compresa nell'intervallo.
+Possiamo inoltre calcolare la stima approssimata dell'intervallo di confidenza.
+
+```{r stimapp, echo=FALSE}
+(medcamp-zalpha*sqrt(medcamp/n))/tempo
+(medcamp+zalpha*sqrt(medcamp/n))/tempo
+```
+
+### Confronto tra due popolazioni di Poisson
+
+Spesso si è interessati a stimare la differenza tra le medie di due distinte popolazioni.
+Consideriamo una prima popolazione di Poisson descritta da una variabile $X \sim P(\lambda_1)$ ed una seconda popolazione di Poisson descritta da una variabile $Y \sim P(\lambda_2)$ e siano $X_1,X_2,...,X_{n1}$ e $Y_1,Y_2,...,Y_{n2}$ due campioni casuali indipendenti di ampiezza $n_1$ e $n_2$ estratti da due popolazioni di Poisson.
+Vogliamo determinare un intervallo di confidenza di grado $1 - \alpha$ per la differenza $\lambda_1 - \lambda_2$ tra i parametri delle due popolazioni per grandi valori di $n_1$ e $n_2$.
+Sono analizzati due server in base al numero di email che ricevono per un fissato numero di giorni.
+Si registrano le email arrivate al server1 per 30 giorni distinti e al server2 per 60 giorni distinti.
+Entrambi i campioni sono descritti da una **variabile aleatoria di Poisson**.
+Si desidera determinare l'intervallo di confidenza di grado $1-\alpha = 0.97$.
+
+Inizio generando due campioni casuali.
+
+```{r confronto, echo=FALSE}
+campione1<-rpois(30, lambda=6)
+print("campione 1")
+campione1
+length(campione1)
+campione2<-rpois(60, lambda=6)
+print("campione 2")
+campione2
+length(campione2)
+```
+
+Le frequenze assolute dei due server sono:
+
+```{r freqasso, echo=FALSE}
+print("frequenze assolute campione 1")
+table(campione1)
+print("media campione 1")
+mean(campione1)
+print("frequenze assolute campione 2")
+table(campione2)
+print("media campione 2")
+mean(campione2)
+```
+
+Determiniamo adesso l'intervallo di confidenza per $\lambda_1-\lambda_2$ di grado $1-\alpha=0.97$.
+
+```{r intervalloconf, echo=FALSE}
+alpha<-1-0.97
+qnorm(1-alpha/2,mean=0,sd=1)
+n1<-length(campione1)
+n2<-length(campione2)
+m1<-mean(campione1)
+m2<-mean(campione2)
+rad<-sqrt(m1/n1+m2/n2)
+m1-m2-qnorm(1-alpha/2,mean=0,sd=1)*rad
+m1-m2+qnorm(1-alpha/2,mean=0,sd=1)*rad
+
+```
+
+Dunque una stima dell'intervallo di confidenza è (-1.6803, 0.7469).
+Poichè questo intervallo include la possibilità che $\lambda_1 = \lambda_2$, non si può concludere che il numero medio di email arrivate ai due server siano differenti con un grado di fiducia del 97%.
+
+### Verifica delle ipotesi
+
+Le aree più importanti dell'inferenza statistica sono la *stima dei parametri* e la *verifica delle ipotesi*.
+La verifica delle ipotesi interviene spesso nelle ricerche di mercato, nelle indagini sperimentali e industriali, nei sondaggi di opinione.
+Gli elementi che costituiscono il punto di partenza del procedimento di verifica delle ipotesi sono una popolazione descritta da una variabile aleatoria X caratterizzata da una funzione di probabilità o densità di probabilità.
+
+Un'**ipotesi statistica** è un'affermazione o una congettura sul parametro non noto $\theta$.
+Se l'ipotesi statistica specifica completamente $f(x;\theta)$ è detta *ipotesi semplice*, altrimenti è chiamata *ipotesi composita*.
+L'ipotesi soggetta a verifica viene in genere denotata con $H_0$ e viene chiamata *ipotesi nulla*.
+Si chiama *test di ipotesi* il procedimento o regola con cui si decide, sulla base dei dati del campione, se accettare o rifiutare $H_0$.
+La costruzione del test richiede la formulazione, in contrapposizione all'ipotesi nulla, di una proposizione alternativa, chiamata *ipotesi alternativa* e indicata con $H_1$.
+Il problema della verifica delle ipotesi consiste nel determinare un **test** che permetta di suddividere, mediante opportuni criteri, l'insieme dei possibili campioni in due sottoinsiemi: una regione di accettazione A dell'ipotesi nulla ed una regione di rifiuto R dell'ipotesi nulla.
+Spesso si usa dire che l'ipotesi nulla $H_0$ deve essere verificata in alternativa all'ipotesi $H_1$.
+Si può però incorrere in due tipi di errori:
+
+\- rifiutare l'ipotesi nulla $H_0$ nel caso in cui tale ipotesi sia vera (errore di tipo I);
+
+\- accettare l'ipotesi nulla $H_0$ nel caso in cui tale ipotesi sia falsa (errore di tipo II).
+
+E' importante definire il concetto di *misura della regione critica* di un test che fornisce la probabilità massima di commettere un errore di tipo I al variare di $\theta$, ossia la probabilità massima di rifiutare l'ipotesi nulla quando essa è vera.
+Solitamente la probabilità di commettere un errore di tipo I si sceglie uguale a 0.05 (statisticamente significativo), 0.01 (statisticamente molto significativo), 0.001 (statisticamente estremamente significativo); *quanto è minore il valore di* $\alpha$ *tanto maggiore è la credibilità di un eventuale rifiuto dell'ipotesi nulla.* I test statistici possono essere di due tipi:
+
+\- **test bilaterali**;
+
+\- **test unilaterali**.
+
+Nel nostro caso, consideriamo una popolazione di Poisson descritta dalla variabile aleartoria $X \sim P(\lambda)$.
+Vogliamo costruire dei test unilaterali e bilaterali per il valore medio $E(X) = \lambda$.
+Il *test bilaterale* può essere così formulato: $H_0 : \lambda = \lambda_0$ $H_1 : \lambda =/ \lambda_0$ mentre il *test unilaterale sinistro e destro* sono rispettivamente i seguenti $H_0 : \lambda \le \lambda_0$ $H_0 : \lambda \ge \lambda_0$ $H_0 : \lambda > \lambda_0$ $H_0 : \lambda < \lambda_0$ avendo fissato a priori un livello di significatività $\alpha$.
+Supponiamo che il numero N(t) di email che arrivano ad un server nell'intervallo (0,t) sia distribuito secondo Poisson con valore medio $E[N(t)] = \lambda t$.
+In 100 osservazioni effettuate in intervalli di tempo di t = 30 giorni si riscontra che in media sono state ricevute 6 email.
+Precedentemente si è mostrato che una stima dell'intervallo di confidenza di grado $1 - \alpha = 0.95$ per il parametro $\lambda$ è (0.1846, 0.2166).
+Vogliamo adesso verificare l'ipotesi $H_0 : 30 \lambda \le 0.2$ in alternativa a $H_1 : 30 \lambda > 0.2$ con un livello di significatività $\alpha = 0.05$.
+Occorre considerare un **test unilaterale sinistro.**
+
+```{r verifica, echo=FALSE}
+lambda0<-2.5
+alpha<-0.05
+qnorm(1-alpha,mean=0,sd=1)
+n<-100
+meancamp<-6
+(meancamp-lambda0)/sqrt(lambda0/n)
+```
+
+Si nota che $z_\alpha = 1.6448$ e $z_os = 129.6919$ cade nella regione di rifiuto.
+Occorre quindi rifiutare l'ipotesi nulla con un livello di significatività del 5%.
+
+### Criterio del chi-quadrato
+
+In molti problemi reali, si desidera verificare se il campione osservato può essere stato estratto da una popolazione descritta da una variabile aleatoria X con funzione di distribuzione $F_X(x)$.
+A questo scopo si usa il criterio di verifica delle ipotesi del **chi-quadrato**.
+Col criterio del chi-quadrato si desidera verificare l'ipotesi che una certa popolazione sia caratterizzata da una funzione di distribuzione $F_x(x)$ con k parametri non noti da stimare.
+Denotiamo con $H_0$ l'ipotesi soggetta a verifica e con $H_1$ l'ipotesi alternativa.
+Il test chi-quadrato con livello di significatività $\alpha$ mira a verificare l'ipotesi nulla $H_0$: X ha una funzione di distribuzione $F_X(x)$ in alternativa all'ipotesi $H_1$: X non ha una funzione di distribuzione $F_X(x)$; $\alpha$ è la probabilità massima di rifiutare l'ipotesi nulla quando essa è vera.
+Occorre determinare un test con livello di significatività $\alpha$ che permetta di determinare una regione di accettazione e di rifiuto dell'ipotesi nulla.
+Il test di verifica delle ipotesi considerato è bilaterale.
+Per un campione sufficientemente numeroso di ampiezza n, il test chi-quadrato bilaterale di misura $\alpha$ è il seguente:
+
+-si accetti l'ipotesi $H_0$ se $\chi ^2 _{1-\alpha/2,r-k-1}< \chi ^2 < \chi ^2 _{\alpha/2, r-k-1}$;
+
+-si rifiuti l'ipotesi $H_0$ se $\chi ^2 < \chi ^2 _{1-\alpha/2,r-k-1}$ oppure $\chi^2>\chi^2_{\alpha/2,r-k-1}$.
+
+#### Applicazione per una popolazione di Poisson
+
+Nel nostro caso andiamo a generare un campione casuale che registra le email ricevute da un server in 60 giorni e calcoliamo le frequenze assolute.
+
+```{r chiq1, echo=FALSE}
+set.seed(123)
+campione<-sample(1:5, 60, replace = TRUE)
+print("campione casuale")
+campione
+
+freq<-table(campione)
+print("frequenze assolute")
+freq
+```
+
+Si nota che nei 60 giorni sono state ricevute: 1 email in 15 giorni, 2 email in 12 giorni, 3 email in 13 giorni, 4 email in 9 giorni, 5 email in 11 giorni.
+Si desidera verificare se il numero di email ricevute sia descrivibile con una variabile aleatoria X di Poisson di parametro $\lambda$, ossia: $p_X(x) = {\lambda^x \over x!}e^{-\lambda} (x=0,1,...)$.
+I dati del campione permettono di ottenere una stima del parametro $\lambda$.
+Infatti, ricordando che uno stimatore corretto con varianza uniformemente minima del parametro $\lambda$ di una dsitribuzione di Poisson risulta essere la media campionaria, si ha:
+
+```{r chiq2, echo=FALSE}
+stimalambda<-mean(campione)
+print("valore stima")
+stimalambda
+```
+
+Supponiamo di considerare 5 categorie corrispondenti agli intervalli $I_1={1}, I_2=(1,2], I_3=(2,3], I_4=(3,+\infty)$.
+Le probabilità associate agli intervalli possono essere così calcolate:
+
+```{r chiq3, echo=FALSE}
+p<-numeric(4)
+p[1]<-dpois(1,stimalambda)
+p[2]<-dpois(2,stimalambda)
+p[3]<-dpois(3,stimalambda)
+p[4]<-1-p[1]-p[2]-p[3]
+print("probabilità associate agli intervalli")
+p
+print("somma delle probabilità")
+sum(p)
+```
+
+Si nota che $p_1+p_2+p_3+p_4 = 1$.
+
+```{r chiq4, echo=FALSE}
+min(n*p[1],n*p[2],n*p[3],n*p[4])
+```
+
+Essendo $min(n*p[1],n*p[2],n*p[3],n*p[4]) > 5$ (16.84), la condizione per cui ogni classe contenga in media almeno 5 elementi è soddisfatta.
+Il numero di elementi del campione appartenente ai quattro intervalli è
+
+```{r chiq5, echo=FALSE}
+r<-4
+nint<-numeric(r)
+nint[1]<-length(which(campione==1))
+nint[2]<-length(which(campione==2))
+nint[3]<-length(which(campione==3))
+nint[4]<-length(which(campione>3))
+print("numero di elementi per ogni intervallo")
+nint
+print("somma degli elementi")
+sum(nint)
+```
+
+Dunque nell'intervallo $I_1$ ci sono 15 elementi, nell'intervallo $I_2$ ci sono 12 elementi, nell'intervallo $I_3$ ci sono 13 elementi e nell'intervallo $I_4$ ci sono 20 elementi.
+Inoltre, tutti gli elementi cadono in un intervallo come dimostra la somma ottenuta degli elementi di ogni intervallo che corrisponde alla lunghezza del campione considerato (60).
+Calcoliamo adesso il $\chi^2$ definito come $\chi^2 = \sum_{i=1}^r ({n_i-np_i \over \sqrt{np_i}})^2$:
+
+```{r chiq6, echo=FALSE}
+n<-length(campione)
+chi2<-sum(((nint-n*p)/sqrt(n*p))^2)
+chi2
+```
+
+che risulta essere $\chi^2 = 2.9655$.
+In questo caso il numero di categorie è r = 4 e occorre porre k = 1 poichè la probabilità di Poisson contiene un parametro non noto.
+Abbiamo quindi $r - k - 1 = 2$ e scegliendo $\alpha = 0.01$ occorre calcolare $\chi^2_{1-\alpha/2,2}$ e $\chi^2_{\alpha/2,2}$:
+
+```{r chiq7, echo=FALSE}
+r<-4
+k<-1
+alppha<-0.01
+qchisq(alpha/2,df=r-k-1)
+qchisq(1-alpha/2,df=r-k-1)
+```
+
+risulta essere $\chi^2_{1-\alpha/2,r-k-1} = 0.0506$ e $\chi^2_{\alpha/2,r-k-1} = 7.377$.
+Essendo $0.0506 < \chi^2 < 7.3777$, l'ipotesi $H_0$ di una popolazione di Poisson può essere accettata.
